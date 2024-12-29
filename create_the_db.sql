@@ -93,7 +93,7 @@ CREATE TABLE dbs.rating (
 CREATE TABLE dbs.contains (
     recipe_id INT NOT NULL,                 -- Reference to the recipe
     nutrition_name VARCHAR(45) NOT NULL,   -- Reference to the nutrition
-    value DECIMAL(10, 2) NOT NULL,         -- Amount of the nutrition in the recipe
+    amount DECIMAL(10, 2) NOT NULL,         -- Amount of the nutrition in the recipe
     PRIMARY KEY (recipe_id, nutrition_name),
     FOREIGN KEY (recipe_id) REFERENCES dbs.recipe(recipe_id) ON DELETE CASCADE,
     FOREIGN KEY (nutrition_name) REFERENCES dbs.nutrition(name) ON DELETE CASCADE
