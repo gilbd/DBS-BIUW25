@@ -1,8 +1,8 @@
-from flask import Blueprint, request, jsonify
-from app import db
-from app.models.relationships.contains import Contains
-from app.models.recipe import Recipe
-from app.models.nutrition import Nutrition
+from config.database import db
+from flask import Blueprint, jsonify, request
+from models.nutrition import Nutrition
+from models.recipe import Recipe
+from models.relationships.contains import Contains
 
 contains_controller = Blueprint("contains_controller", __name__)
 
@@ -23,9 +23,7 @@ def add_nutrition_to_recipe():
     ).fetchone()
 
     if recipe and nutrition:
-        contains = Contains(
-            recipe_id=recipe_id, nutrition_name=nutrition_name, amount=amount
-        )
+        contains = Contains(recipe_id=recipe_id, nutrition_name=nutrition_name, amount=amount)
         db.session.add(contains)
         db.session.commit()
         return jsonify(contains.to_dict()), 201

@@ -1,4 +1,5 @@
-from app import db
+from config.database import db
+
 
 class Diet(db.Model):
     __tablename__ = 'diet'
@@ -16,4 +17,4 @@ class Diet(db.Model):
             'name': self.name,
             'keywords': self.keywords,
             'description': self.description
-        }
+        }        }

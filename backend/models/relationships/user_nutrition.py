@@ -1,4 +1,5 @@
-from app import db
+from config.database import db
+
 
 class UserNutrition(db.Model):
     __tablename__ = 'user_nutrition'
@@ -19,4 +20,4 @@ class UserNutrition(db.Model):
             'user_id': self.user_id,
             'nutrition_name': self.nutrition_name,
             'tracked_value': float(self.tracked_value) if self.tracked_value is not None else None
-        }
+        }        }

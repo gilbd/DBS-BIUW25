@@ -1,4 +1,5 @@
-from app import db
+from config.database import db
+
 
 class Contains(db.Model):
     __tablename__ = 'contains'
@@ -19,4 +20,4 @@ class Contains(db.Model):
             'recipe_id': self.recipe_id,
             'nutrition_name': self.nutrition_name,
             'amount': float(self.amount)
-        }
+        }        }

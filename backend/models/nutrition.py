@@ -1,4 +1,5 @@
-from app import db
+from config.database import db
+
 
 class Nutrition(db.Model):
     __tablename__ = 'nutrition'
@@ -14,4 +15,5 @@ class Nutrition(db.Model):
             'name': self.name,
             'unit': self.unit,
             'average_daily_value': float(self.average_daily_value)
+        }
         }

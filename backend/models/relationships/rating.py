@@ -1,4 +1,5 @@
-from app import db
+from config.database import db
+
 
 class Rating(db.Model):
     __tablename__ = 'rating'
@@ -21,4 +22,4 @@ class Rating(db.Model):
             'recipe_id': self.recipe_id,
             'rating': self.rating,
             'created_at': self.created_at.isoformat()
-        }
+        }        }

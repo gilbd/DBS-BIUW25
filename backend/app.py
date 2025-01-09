@@ -1,11 +1,12 @@
-from flask import Flask
 from config.database import db
 from config.settings import (
-    SQLALCHEMY_DATABASE_URI,
-    SQLALCHEMY_TRACK_MODIFICATIONS,
     DEBUG,
     SECRET_KEY,
+    SQLALCHEMY_DATABASE_URI,
+    SQLALCHEMY_TRACK_MODIFICATIONS,
 )
+from flask import Flask
+from sqlalchemy.sql import text
 
 
 def create_app():
@@ -22,16 +23,25 @@ def create_app():
 
     # Create tables if not exist
     with app.app_context():
-        # Import models to ensure they're known to SQLAlchemy
-        from models.user import User
-        from models.admin import Admin
-
         db.create_all()
+        # Test database connection
+        try:
+            test = db.session.execute(text("SELECT 1")).scalar()
+            assert test == 1, "Database connection error"
+            print("Database connection successful!")
+        except Exception as e:
+            print(f"Database connection failed: {e}")
 
         # Import and register blueprints
+        from controllers.admin_controller import admin_controller
         from controllers.auth_controller import auth_controller
+        from controllers.user_controller import user_controller
 
+        app.register_blueprint(admin_controller, url_prefix="/api/admin")
         app.register_blueprint(auth_controller, url_prefix="/api/auth")
+        app.register_blueprint(user_controller, url_prefix="/api/user")
+
+        # app.register_blueprint(auth_controller, url_prefix="/api/auth")
 
     return app
 

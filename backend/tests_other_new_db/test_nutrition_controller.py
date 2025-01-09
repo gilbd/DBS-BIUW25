@@ -1,6 +1,8 @@
 import unittest
-from app import create_app, db
-from app.models.nutrition import Nutrition
+
+from config.database import create_app, db
+from models.nutrition import Nutrition
+
 
 class TestNutritionController(unittest.TestCase):
     @classmethod
@@ -51,4 +53,5 @@ class TestNutritionController(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
 if __name__ == '__main__':
+    unittest.main()if __name__ == '__main__':
     unittest.main()

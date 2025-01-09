@@ -1,4 +1,5 @@
-from app import db
+from config.database import db
+
 
 class Fits(db.Model):
     __tablename__ = 'fits'
@@ -17,4 +18,4 @@ class Fits(db.Model):
         return {
             'recipe_id': self.recipe_id,
             'diet_id': self.diet_id
-        }
+        }        }

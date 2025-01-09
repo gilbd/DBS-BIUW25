@@ -1,6 +1,8 @@
 import unittest
-from app import create_app, db
-from app.models.user import User
+
+from config.database import create_app, db
+from models.user import User
+
 
 class TestServer(unittest.TestCase):
     @classmethod
@@ -53,4 +55,5 @@ class TestServer(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
 if __name__ == '__main__':
+    unittest.main()if __name__ == '__main__':
     unittest.main()

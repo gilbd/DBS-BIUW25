@@ -1,4 +1,5 @@
-from app import db
+from config.database import db
+
 
 class Recipe(db.Model):
     __tablename__ = 'recipe'
@@ -20,4 +21,4 @@ class Recipe(db.Model):
             'image': self.image,
             'directions': self.directions,
             'ingredients': self.ingredients
-        }
+        }        }

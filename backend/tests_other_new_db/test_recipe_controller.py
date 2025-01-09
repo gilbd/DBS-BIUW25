@@ -1,6 +1,8 @@
 import unittest
-from app import create_app, db
-from app.models.recipe import Recipe
+
+from config.database import create_app, db
+from models.recipe import Recipe
+
 
 class TestRecipeController(unittest.TestCase):
     @classmethod
@@ -53,4 +55,5 @@ class TestRecipeController(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
 
 if __name__ == '__main__':
+    unittest.main()if __name__ == '__main__':
     unittest.main()

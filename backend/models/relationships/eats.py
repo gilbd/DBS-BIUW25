@@ -1,4 +1,5 @@
-from app import db
+from config.database import db
+
 
 class Eats(db.Model):
     __tablename__ = 'eats'
@@ -19,4 +20,4 @@ class Eats(db.Model):
             'user_id': self.user_id,
             'recipe_id': self.recipe_id,
             'created_at': self.created_at.isoformat()
-        }
+        }        }

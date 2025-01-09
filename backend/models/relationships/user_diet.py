@@ -1,4 +1,5 @@
-from app import db
+from config.database import db
+
 
 class UserDiet(db.Model):
     __tablename__ = 'user_diet'
@@ -17,4 +18,4 @@ class UserDiet(db.Model):
         return {
             'user_id': self.user_id,
             'diet_id': self.diet_id
-        }
+        }        }

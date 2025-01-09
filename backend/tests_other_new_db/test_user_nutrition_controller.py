@@ -1,8 +1,10 @@
 import unittest
-from app import create_app, db
-from app.models.relationships.user_nutrition import UserNutrition
-from app.models.user import User
-from app.models.nutrition import Nutrition
+
+from config.database import create_app, db
+from models.nutrition import Nutrition
+from models.relationships.user_nutrition import UserNutrition
+from models.user import User
+
 
 class TestUserNutritionController(unittest.TestCase):
     @classmethod
@@ -35,4 +37,5 @@ class TestUserNutritionController(unittest.TestCase):
         self.assertEqual(response.status_code, 201)
 
 if __name__ == '__main__':
+    unittest.main()if __name__ == '__main__':
     unittest.main()
