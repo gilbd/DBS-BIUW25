@@ -1,9 +1,12 @@
 from functools import wraps
-from flask import request, jsonify
+
 import jwt
+from config.database import db
 from config.settings import SECRET_KEY
-from models.user import User
+from flask import jsonify, request
 from models.admin import Admin
+from models.user import User
+from sqlalchemy.sql import text
 
 
 def token_required(f):
@@ -23,7 +26,10 @@ def token_required(f):
 
         try:
             data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-            current_user = User.query.get(data["user_id"])
+            result = db.session.execute(
+                text("SELECT * FROM user WHERE user_id = :user_id"), {"user_id": data["user_id"]}
+            ).first()
+            current_user = User.query.get(result) if result else None
             if not current_user:
                 return jsonify({"error": "User not found"}), 404
         except:
@@ -51,13 +57,23 @@ def admin_required(f):
 
         try:
             data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-            current_user = User.query.get(data["user_id"])
+
+            # Get user
+            result = db.session.execute(
+                text("SELECT * FROM user WHERE user_id = :user_id"), {"user_id": data["user_id"]}
+            ).first()
+            current_user = User.query.get(result) if result else None
+
             if not current_user:
                 return jsonify({"error": "User not found"}), 404
 
             # Check if user is admin
-            is_admin = Admin.query.filter_by(user_id=current_user.user_id).first()
-            if not is_admin:
+            admin_result = db.session.execute(
+                text("SELECT * FROM admin WHERE user_id = :user_id"),
+                {"user_id": current_user.user_id},
+            ).first()
+
+            if not admin_result:
                 return jsonify({"error": "Admin privileges required"}), 403
         except:
             return jsonify({"error": "Invalid token"}), 401

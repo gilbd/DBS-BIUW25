@@ -27,17 +27,15 @@ def login():
 
     # Check if we're using email or user_id for login
     if "email" in data:
-        data = data["email"]
         result = db.session.execute(
             text("SELECT * FROM user WHERE email = :email"), {"email": data["email"]}
         ).first()
 
         user = User.query.get(result[0]) if result else None
     elif "userId" in data:
-        data = data["userId"]
         result = db.session.execute(
             text("SELECT * FROM user WHERE user_id = :user_id"),
-            user_id=data["userId"],
+            {"user_id": data["userId"]},
         ).first()
         user = User.query.get(result[0]) if result else None
     else:

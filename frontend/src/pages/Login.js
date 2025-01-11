@@ -13,7 +13,7 @@ import {
 } from '@mui/material';
 
 function Login() {
-  const [loginMethod, setLoginMethod] = useState('email'); // 'email' or 'userId'
+  const [loginMethod, setLoginMethod] = useState('email');
   const [email, setEmail] = useState('');
   const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
@@ -31,9 +31,12 @@ function Login() {
     setError('');
     
     try {
-      const credentials = loginMethod === 'email' 
-        ? { email, password }
-        : { userId, password };
+      let credentials;
+      if (loginMethod === 'email') {
+        credentials = { email, password };
+      } else {
+        credentials = { userId: parseInt(userId), password };
+      }
 
       const success = await login(credentials);
       if (success) {
