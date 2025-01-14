@@ -10,10 +10,13 @@ function MainPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const recommendations = await recipeService.getRecommendations();
-        setRecommendedRecipes(recommendations.slice(0, 3));
-        // In a real app, you'd have a separate endpoint for recent recipes
-        setRecentRecipes(recommendations.slice(3, 6));
+        const response = await recipeService.getRecommendations();
+        // Check if response has the expected structure
+        if (response.status === 'success' && Array.isArray(response.data)) {
+          const recipes = response.data;
+          setRecommendedRecipes(recipes.slice(0, 3));
+          setRecentRecipes(recipes.slice(3));
+        }
       } catch (error) {
         console.error('Error fetching recipes:', error);
       }
@@ -35,9 +38,11 @@ function MainPage() {
           {recipe.recipe_name}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Time to cook: {recipe.total_time} minutes
+          {recipe.total_time && `Time to cook: ${recipe.total_time} minutes`}
         </Typography>
-        <Rating value={recipe.rating || 0} readOnly />
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          {recipe.ingredients && recipe.ingredients.split('\n')[0]}...
+        </Typography>
       </CardContent>
     </Card>
   );
@@ -46,7 +51,7 @@ function MainPage() {
     <Layout>
       <Box sx={{ flexGrow: 1 }}>
         <Typography variant="h4" gutterBottom>
-          Recently Eaten
+          Recently Added
         </Typography>
         <Grid container spacing={3} sx={{ mb: 4 }}>
           {recentRecipes.map((recipe) => (

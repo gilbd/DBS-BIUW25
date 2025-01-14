@@ -1,6 +1,7 @@
 from config.database import db
 from flask import Blueprint, jsonify, request
 from models.recipe import Recipe
+from sqlalchemy.sql import func
 
 recipe_controller = Blueprint("recipe_controller", __name__)
 
@@ -55,3 +56,25 @@ def delete_recipe(id):
         db.session.commit()
         return jsonify({"message": "Recipe deleted"}), 200
     return jsonify({"message": "Recipe not found"}), 404
+
+
+@recipe_controller.route('/recommendations', methods=['GET'])
+def get_recommendations():
+    try:
+        # Get 5 random recipes
+        random_recipes = Recipe.query.order_by(func.random()).limit(5).all()
+        print(random_recipes)
+        
+        # Convert recipes to dictionary format
+        recipes_data = [recipe.to_dict() for recipe in random_recipes]
+        
+        return jsonify({
+            'status': 'success',
+            'data': recipes_data
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500

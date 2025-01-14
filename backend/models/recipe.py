@@ -21,4 +21,4 @@ class Recipe(db.Model):
             'image': self.image,
             'directions': self.directions,
             'ingredients': self.ingredients
-        }        }
+        }
