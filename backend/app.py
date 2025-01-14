@@ -6,11 +6,13 @@ from config.settings import (
     SQLALCHEMY_TRACK_MODIFICATIONS,
 )
 from flask import Flask
+from flask_cors import CORS
 from sqlalchemy.sql import text
 
 
 def create_app():
     app = Flask(__name__)
+    CORS(app)
 
     # Application configurations
     app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
@@ -36,10 +38,12 @@ def create_app():
         from controllers.admin_controller import admin_controller
         from controllers.auth_controller import auth_controller
         from controllers.user_controller import user_controller
+        from controllers.recipe_controller import recipe_controller
 
         app.register_blueprint(admin_controller, url_prefix="/api/admin")
         app.register_blueprint(auth_controller, url_prefix="/api/auth")
         app.register_blueprint(user_controller, url_prefix="/api/user")
+        app.register_blueprint(recipe_controller, url_prefix="/api/recipes")
 
         # app.register_blueprint(auth_controller, url_prefix="/api/auth")
 
