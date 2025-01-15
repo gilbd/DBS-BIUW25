@@ -52,55 +52,73 @@ function MainPage() {
       setDialogOpen(false);  // Close the dialog first
       setSelectedRecipe(null);  // Clear the selected recipe
       
-      // Update the local state to show the recipe as eaten
-      const updateRecipes = (recipes) =>
-        recipes.map(recipe =>
-          recipe.recipe_id === recipeId
-            ? { ...recipe, is_eaten: true }
-            : recipe
+      // Get a new uneaten recipe to replace the eaten one
+      const response = await recipeService.getNewRecommendation(user.user_id);
+      if (response.status === 'success' && response.data) {
+        // Update recommendedRecipes by replacing the eaten recipe with the new one
+        setRecommendedRecipes(prevRecipes => 
+          prevRecipes.map(recipe => 
+            recipe.recipe_id === recipeId ? response.data : recipe
+          )
         );
-      
-      setRecommendedRecipes(updateRecipes(recommendedRecipes));
-      setRecentRecipes(updateRecipes(recentRecipes));
+      }
+
+      // Refresh recent recipes to include the newly eaten recipe
+      const recentResponse = await recipeService.getRecentRecipes(user.user_id);
+      if (recentResponse.status === 'success' && Array.isArray(recentResponse.data)) {
+        setRecentRecipes(recentResponse.data);
+      }
     } catch (error) {
       console.error('Error logging eaten recipe:', error);
     }
   };
 
-  const RecipeCard = ({ recipe }) => (
-    <Card 
-      sx={{ 
-        height: '100%', 
-        display: 'flex', 
-        flexDirection: 'column',
-        cursor: 'pointer',
-        backgroundColor: recipe.is_eaten ? '#e8f5e9' : 'white',
-        '&:hover': {
-          transform: 'scale(1.02)',
-          transition: 'transform 0.2s ease-in-out'
-        }
-      }}
-      onClick={() => handleRecipeClick(recipe)}
-    >
-      <CardMedia
-        component="img"
-        height="140"
-        image={recipe.image || 'https://via.placeholder.com/300x200'}
-        alt={recipe.recipe_name}
-      />
-      <CardContent>
-        <Typography gutterBottom variant="h6" component="div">
-          {recipe.recipe_name}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {recipe.total_time && `Time to cook: ${recipe.total_time} minutes`}
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-          {recipe.ingredients && recipe.ingredients.split('\n')[0]}...
-        </Typography>
-      </CardContent>
-    </Card>
-  );
+  const RecipeCard = ({ recipe }) => {
+    // Function to format ingredients
+    const formatIngredients = (ingredientsString) => {
+      if (!ingredientsString) return '';
+      return ingredientsString
+        .split('^')
+        .map((ingredient, index) => `${index + 1}. ${ingredient.trim()}`)
+        .slice(0, 2) // Show only first 2 ingredients in the card
+        .join('\n');
+    };
+
+    return (
+      <Card 
+        sx={{ 
+          height: '100%', 
+          display: 'flex', 
+          flexDirection: 'column',
+          cursor: 'pointer',
+          backgroundColor: recipe.is_eaten ? '#e8f5e9' : 'white',
+          '&:hover': {
+            transform: 'scale(1.02)',
+            transition: 'transform 0.2s ease-in-out'
+          }
+        }}
+        onClick={() => handleRecipeClick(recipe)}
+      >
+        <CardMedia
+          component="img"
+          height="140"
+          image={recipe.image || 'https://via.placeholder.com/300x200'}
+          alt={recipe.recipe_name}
+        />
+        <CardContent>
+          <Typography gutterBottom variant="h6" component="div">
+            {recipe.recipe_name}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {recipe.total_time && `Time to cook: ${recipe.total_time} minutes`}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            {formatIngredients(recipe.ingredients)}...
+          </Typography>
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <Layout>
