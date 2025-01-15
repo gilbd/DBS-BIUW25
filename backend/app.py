@@ -12,7 +12,15 @@ from sqlalchemy.sql import text
 
 def create_app():
     app = Flask(__name__)
-    CORS(app)
+    
+    # Configure CORS
+    CORS(app, resources={
+        r"/api/*": {
+            "origins": ["http://localhost:3000"],
+            "methods": ["GET", "POST", "PUT", "DELETE"],
+            "allow_headers": ["Content-Type", "Authorization"]
+        }
+    })
 
     # Application configurations
     app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
@@ -39,11 +47,13 @@ def create_app():
         from controllers.auth_controller import auth_controller
         from controllers.user_controller import user_controller
         from controllers.recipe_controller import recipe_controller
+        from controllers.eats_controller import eats_controller
 
         app.register_blueprint(admin_controller, url_prefix="/api/admin")
         app.register_blueprint(auth_controller, url_prefix="/api/auth")
         app.register_blueprint(user_controller, url_prefix="/api/user")
         app.register_blueprint(recipe_controller, url_prefix="/api/recipes")
+        app.register_blueprint(eats_controller, url_prefix="/api/eats")
 
         # app.register_blueprint(auth_controller, url_prefix="/api/auth")
 
@@ -52,4 +62,4 @@ def create_app():
 
 if __name__ == "__main__":
     app = create_app()
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(host="localhost", port=5000, debug=True)

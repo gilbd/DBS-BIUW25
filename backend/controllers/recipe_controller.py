@@ -2,6 +2,7 @@ from config.database import db
 from flask import Blueprint, jsonify, request
 from models.recipe import Recipe
 from sqlalchemy.sql import func
+from models.relationships.eats import Eats
 
 recipe_controller = Blueprint("recipe_controller", __name__)
 
@@ -61,12 +62,49 @@ def delete_recipe(id):
 @recipe_controller.route('/recommendations', methods=['GET'])
 def get_recommendations():
     try:
+        # Get user_id from request args or JWT token
+        user_id = request.args.get('user_id')
+        
         # Get 5 random recipes
         random_recipes = Recipe.query.order_by(func.random()).limit(5).all()
-        print(random_recipes)
         
-        # Convert recipes to dictionary format
-        recipes_data = [recipe.to_dict() for recipe in random_recipes]
+        # Convert recipes to dictionary format with user_id context
+        recipes_data = [recipe.to_dict(user_id=user_id) for recipe in random_recipes]
+        
+        return jsonify({
+            'status': 'success',
+            'data': recipes_data
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+
+@recipe_controller.route('/recent', methods=['GET'])
+def get_recent_recipes():
+    try:
+        user_id = request.args.get('user_id')
+        if not user_id:
+            return jsonify({
+                'status': 'error',
+                'message': 'User ID is required'
+            }), 400
+
+        # Get recent recipes eaten by the user, ordered by most recent first
+        recent_recipes = (
+            Recipe.query
+            .join(Recipe.eats)
+            .filter(Eats.user_id == user_id)
+            .order_by(Eats.created_at.desc())
+            .limit(3)
+            .all()
+        )
+        
+        # Convert recipes to dictionary format with user_id context
+        recipes_data = [recipe.to_dict(user_id=user_id) for recipe in recent_recipes]
         
         return jsonify({
             'status': 'success',
