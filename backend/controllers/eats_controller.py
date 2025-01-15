@@ -1,3 +1,4 @@
+import datetime
 from config.database import db
 from flask import Blueprint, jsonify, request
 from models.recipe import Recipe
@@ -10,6 +11,8 @@ eats_controller = Blueprint("eats_controller", __name__)
 # Log when a user eats a recipe
 @eats_controller.route("/eats", methods=["POST"])
 def log_user_eats():
+    print("Logging user eats")
+    print(request.json)
     user_id = request.json.get("user_id")
     recipe_id = request.json.get("recipe_id")
 
@@ -17,7 +20,7 @@ def log_user_eats():
     recipe = Recipe.query.get(recipe_id)
 
     if user and recipe:
-        eats = Eats(user_id=user_id, recipe_id=recipe_id)
+        eats = Eats(user_id=user_id, recipe_id=recipe_id, created_at=datetime.datetime.now())
         db.session.add(eats)
         db.session.commit()
         return jsonify(eats.to_dict()), 201

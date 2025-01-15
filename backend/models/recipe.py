@@ -13,12 +13,20 @@ class Recipe(db.Model):
     def __repr__(self):
         return f"<Recipe {self.recipe_name}>"
     
-    def to_dict(self):
-        return {
+    def to_dict(self, user_id=None):
+        data = {
             'recipe_id': self.recipe_id,
             'recipe_name': self.recipe_name,
             'total_time': self.total_time,
             'image': self.image,
             'directions': self.directions,
-            'ingredients': self.ingredients
-        }        }
+            'ingredients': self.ingredients,
+            'is_eaten': False
+        }
+        
+        if user_id:
+            # Check if this recipe has been eaten by the user
+            is_eaten = any(eat.user_id == user_id for eat in self.eats)
+            data['is_eaten'] = is_eaten
+            
+        return data

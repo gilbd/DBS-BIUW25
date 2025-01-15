@@ -26,8 +26,10 @@ export const authService = {
 };
 
 export const recipeService = {
-  getRecommendations: async () => {
-    const response = await api.get('/recipes/recommendations');
+  getRecommendations: async (userId) => {
+    const response = await api.get('/recipes/recommendations', {
+      params: { user_id: userId }
+    });
     return response.data;
   },
   searchRecipes: async (params) => {
@@ -37,7 +39,20 @@ export const recipeService = {
   getRecipeById: async (id) => {
     const response = await api.get(`/recipes/${id}`);
     return response.data;
-  }
+  },
+  logEatenRecipe: async (userId, recipeId) => {
+    const response = await api.post('/eats/eats', {
+      user_id: userId,
+      recipe_id: recipeId
+    });
+    return response.data;
+  },
+  getRecentRecipes: async (userId) => {
+    const response = await api.get('/recipes/recent', {
+      params: { user_id: userId }
+    });
+    return response.data;
+  },
 };
 
 export const userService = {

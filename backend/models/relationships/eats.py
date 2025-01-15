@@ -20,4 +20,4 @@ class Eats(db.Model):
             'user_id': self.user_id,
             'recipe_id': self.recipe_id,
             'created_at': self.created_at.isoformat()
-        }        }
+        }
