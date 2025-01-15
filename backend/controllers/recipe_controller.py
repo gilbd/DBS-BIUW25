@@ -62,14 +62,28 @@ def delete_recipe(id):
 @recipe_controller.route('/recommendations', methods=['GET'])
 def get_recommendations():
     try:
-        # Get user_id from request args or JWT token
         user_id = request.args.get('user_id')
+        if not user_id:
+            return jsonify({
+                'status': 'error',
+                'message': 'User ID is required'
+            }), 400
         
-        # Get 5 random recipes
-        random_recipes = Recipe.query.order_by(func.random()).limit(5).all()
+        # Get recipes that the user hasn't eaten yet
+        uneaten_recipes = (
+            Recipe.query
+            .outerjoin(Eats)
+            .filter(
+                (Eats.user_id.is_(None)) |  # Recipe has no eats records
+                (Eats.user_id != user_id)    # Or not eaten by this user
+            )
+            .order_by(func.random())
+            .limit(3)
+            .all()
+        )
         
         # Convert recipes to dictionary format with user_id context
-        recipes_data = [recipe.to_dict(user_id=user_id) for recipe in random_recipes]
+        recipes_data = [recipe.to_dict(user_id=user_id) for recipe in uneaten_recipes]
         
         return jsonify({
             'status': 'success',
