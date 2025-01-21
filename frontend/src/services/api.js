@@ -53,6 +53,12 @@ export const recipeService = {
     });
     return response.data;
   },
+  getNewRecommendation: async (userId) => {
+    const response = await api.get('/recipes/new-recommendation', {
+      params: { user_id: userId }
+    });
+    return response.data;
+  },
 };
 
 export const userService = {

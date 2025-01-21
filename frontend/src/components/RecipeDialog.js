@@ -14,6 +14,15 @@ import RestaurantIcon from '@mui/icons-material/Restaurant';
 function RecipeDialog({ open, recipe, onClose, onEat }) {
   if (!recipe) return null;
 
+  // Function to format ingredients
+  const formatIngredients = (ingredientsString) => {
+    if (!ingredientsString) return '';
+    return ingredientsString
+      .split('^')
+      .map((ingredient, index) => `${index + 1}. ${ingredient.trim()}`)
+      .join('\n');
+  };
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>
@@ -33,7 +42,7 @@ function RecipeDialog({ open, recipe, onClose, onEat }) {
         
         <Typography variant="h6" gutterBottom>Ingredients</Typography>
         <Typography paragraph style={{ whiteSpace: 'pre-line' }}>
-          {recipe.ingredients}
+          {formatIngredients(recipe.ingredients)}
         </Typography>
         
         <Divider sx={{ my: 2 }} />

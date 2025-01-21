@@ -116,3 +116,42 @@ def get_recent_recipes():
             'status': 'error',
             'message': str(e)
         }), 500
+
+
+@recipe_controller.route('/new-recommendation', methods=['GET'])
+def get_new_recommendation():
+    try:
+        user_id = request.args.get('user_id')
+        if not user_id:
+            return jsonify({
+                'status': 'error',
+                'message': 'User ID is required'
+            }), 400
+        
+        # Get one random recipe that hasn't been eaten by this user
+        new_recipe = (
+            Recipe.query
+            .outerjoin(Eats)
+            .filter(
+                ~Recipe.eats.any(Eats.user_id == user_id)  # Not eaten by this user
+            )
+            .order_by(func.random())
+            .first()
+        )
+        
+        if not new_recipe:
+            return jsonify({
+                'status': 'error',
+                'message': 'No new recipes available'
+            }), 404
+        
+        return jsonify({
+            'status': 'success',
+            'data': new_recipe.to_dict(user_id=user_id)
+        }), 200
+
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
