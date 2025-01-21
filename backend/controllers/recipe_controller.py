@@ -155,3 +155,53 @@ def get_new_recommendation():
             'status': 'error',
             'message': str(e)
         }), 500
+
+
+@recipe_controller.route('/search', methods=['GET'])
+def search_recipes():
+    try:
+        max_time = request.args.get('maxTime')
+        query = request.args.get('query')
+        diet = request.args.get('diet')
+        ingredient = request.args.get('ingredient')
+        
+        # Build the query
+        query_obj = Recipe.query
+        
+        # Apply filters if provided
+        if max_time and max_time.isdigit():
+            query_obj = query_obj.filter(Recipe.total_time <= int(max_time))
+            
+        if query:
+            # Split the search query into words and search for all words in the recipe name
+            search_words = query.lower().split()
+            for word in search_words:
+                search = f"%{word}%"
+                query_obj = query_obj.filter(Recipe.recipe_name.ilike(search))
+            
+        if ingredient:
+            # Search in ingredients field
+            search = f"%{ingredient}%"
+            query_obj = query_obj.filter(Recipe.ingredients.ilike(search))
+            
+        if diet:
+            search = f"%{diet}%"
+            query_obj = query_obj.filter(Recipe.diets.ilike(search))
+        
+        # Get 4 random recipes that match the criteria
+        recipes = query_obj.order_by(func.random()).limit(4).all()
+        
+        # Convert to dictionary format
+        recipes_data = [recipe.to_dict() for recipe in recipes]
+        
+        return jsonify({
+            'status': 'success',
+            'data': recipes_data
+        }), 200
+
+    except Exception as e:
+        print(f"Search error: {e}")  # Add logging for debugging
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500

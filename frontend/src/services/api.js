@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
+  baseURL: 'http://localhost:5000/api',  // Use a direct URL instead of proxy
 });
 
 // Request interceptor for adding auth token
@@ -15,9 +15,13 @@ api.interceptors.request.use((config) => {
 
 export const authService = {
   login: async (credentials) => {
-    // credentials can have either {email, password} or {userId, password}
-    const response = await api.post('/auth/login', credentials);
-    return response.data;
+    try {
+      const response = await api.post('/auth/login', credentials);
+      return response.data;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
   },
   verify: async () => {
     const response = await api.get('/auth/verify');
@@ -68,6 +72,13 @@ export const userService = {
   },
   getProfile: async () => {
     const response = await api.get('/users/profile');
+    return response.data;
+  }
+};
+
+export const dietService = {
+  getAllDiets: async () => {
+    const response = await api.get('/diets');
     return response.data;
   }
 };
