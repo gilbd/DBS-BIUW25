@@ -38,6 +38,7 @@ def create_recipe():
 # Get recipe according id
 @recipe_controller.route("/recipes/<int:id>", methods=["GET"])
 def get_recipe(id):
+    logger.info(f"Getting recipe with id: {id}")
     query = "SELECT * FROM recipe WHERE recipe_id = :id"
     result = db.session.execute(text(query), {"id": id}).first()
     if result:
@@ -236,4 +237,47 @@ def search_recipes():
 
     except Exception as e:
         logger.error(f"Search error: {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@recipe_controller.route("/recipes/<int:recipe_id>", methods=["GET"])
+def get_recipe_with_status(recipe_id):
+    try:
+        user_id = request.args.get("user_id")
+        logger.info(f"Getting recipe {recipe_id} for user {user_id}")
+
+        # Get recipe with eaten status
+        query = """
+            SELECT 
+                r.*,
+                CASE WHEN e.user_id IS NOT NULL THEN TRUE ELSE FALSE END as is_eaten
+            FROM recipe r
+            LEFT JOIN eats e ON r.recipe_id = e.recipe_id AND e.user_id = :user_id
+            WHERE r.recipe_id = :recipe_id
+        """
+
+        result = db.session.execute(
+            text(query), {"recipe_id": recipe_id, "user_id": user_id}
+        ).first()
+
+        if not result:
+            logger.error(f"Recipe {recipe_id} not found")
+            return jsonify({"status": "error", "message": "Recipe not found"}), 404
+
+        # Convert to dict and include is_eaten flag
+        recipe_data = {
+            "recipe_id": result.recipe_id,
+            "recipe_name": result.recipe_name,
+            "ingredients": result.ingredients,
+            "directions": result.directions,
+            "total_time": result.total_time,
+            "image": result.image,
+            "is_eaten": bool(result.is_eaten),
+        }
+
+        logger.info(f"Recipe data: {recipe_data}")
+        return jsonify({"status": "success", "data": recipe_data})
+
+    except Exception as e:
+        logger.error(f"Error getting recipe: {str(e)}", exc_info=True)
         return jsonify({"status": "error", "message": str(e)}), 500

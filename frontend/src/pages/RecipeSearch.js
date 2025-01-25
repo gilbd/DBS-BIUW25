@@ -12,13 +12,16 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Chip
+  Chip,
+  Rating,
+  Stack
 } from '@mui/material';
-import { recipeService } from '../services/api';
+import { recipeService, ratingService } from '../services/api';
 import Layout from '../components/layout/Layout';
 import RecipeDialog from '../components/RecipeDialog';
 import { useAuth } from '../contexts/AuthContext';
 import { dietService } from '../services/api';
+import StarIcon from '@mui/icons-material/Star';
 
 function RecipeSearch() {
   const [searchParams, setSearchParams] = useState({
@@ -32,6 +35,7 @@ function RecipeSearch() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const { user } = useAuth();
   const [diets, setDiets] = useState([]);
+  const [ratings, setRatings] = useState({});
 
   // Fetch diets when component mounts
   useEffect(() => {
@@ -47,6 +51,30 @@ function RecipeSearch() {
     };
     fetchDiets();
   }, []);
+
+  // Fetch rating for eaten recipes
+  const fetchRating = async (recipeId) => {
+    try {
+      const response = await ratingService.getUserRating(recipeId);
+      if (response.status === 'success' && response.data) {
+        setRatings(prev => ({
+          ...prev,
+          [recipeId]: response.data.rating
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching rating:', error);
+    }
+  };
+
+  // Fetch ratings when recipes change
+  useEffect(() => {
+    recipes.forEach(recipe => {
+      if (recipe.is_eaten) {
+        fetchRating(recipe.recipe_id);
+      }
+    });
+  }, [recipes]);
 
   const handleSearch = async () => {
     try {
@@ -72,9 +100,15 @@ function RecipeSearch() {
     }));
   };
 
-  const handleRecipeClick = (recipe) => {
-    setSelectedRecipe(recipe);
-    setDialogOpen(true);
+  const handleRecipeClick = async (recipeId) => {
+    try {
+      const recipeData = await recipeService.getRecipeById(recipeId);
+      console.log('Recipe data:', recipeData); // Debug log
+      setSelectedRecipe(recipeData);
+      setDialogOpen(true);
+    } catch (error) {
+      console.error('Error fetching recipe:', error);
+    }
   };
 
   const handleEatRecipe = async (recipeId) => {
@@ -92,6 +126,18 @@ function RecipeSearch() {
       handleSearch();
     } catch (error) {
       console.error('Error logging eaten recipe:', error);
+    }
+  };
+
+  const handleRating = async (recipeId, newValue) => {
+    try {
+      await ratingService.rateRecipe(recipeId, newValue);
+      setRatings(prev => ({
+        ...prev,
+        [recipeId]: newValue
+      }));
+    } catch (error) {
+      console.error('Error saving rating:', error);
     }
   };
 
@@ -170,7 +216,7 @@ function RecipeSearch() {
                     transition: 'transform 0.2s ease-in-out'
                   }
                 }}
-                onClick={() => handleRecipeClick(recipe)}
+                onClick={() => handleRecipeClick(recipe.recipe_id)}
               >
                 <CardMedia
                   component="img"
@@ -185,6 +231,22 @@ function RecipeSearch() {
                   <Typography variant="body2" color="text.secondary">
                     Time: {recipe.total_time} minutes
                   </Typography>
+                  {recipe.is_eaten && (
+                    <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 1 }}>
+                      <Typography component="legend" variant="body2">
+                        Your Rating:
+                      </Typography>
+                      <Rating
+                        value={ratings[recipe.recipe_id] || 0}
+                        onChange={(event, newValue) => {
+                          event.stopPropagation();
+                          handleRating(recipe.recipe_id, newValue);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        size="small"
+                      />
+                    </Stack>
+                  )}
                   {recipe.diets?.length > 0 && (
                     <Box sx={{ mt: 1, mb: 1 }}>
                       {recipe.diets.map((diet) => (

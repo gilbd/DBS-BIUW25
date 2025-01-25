@@ -23,6 +23,7 @@ export const AuthProvider = ({ children }) => {
       const response = await authService.login(credentials);
       if (response.token) {
         localStorage.setItem('token', response.token);
+        localStorage.setItem('userId', response.user.user_id);
         setUser(response.user);
         return true;
       }
@@ -35,6 +36,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('userId');
     setUser(null);
   };
 

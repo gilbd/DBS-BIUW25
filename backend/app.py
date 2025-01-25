@@ -54,6 +54,7 @@ def create_app():
         from controllers.admin_controller import admin_controller
         from controllers.auth_controller import auth_controller
         from controllers.eats_controller import eats_controller
+        from controllers.rating_controller import rating_controller
         from controllers.recipe_controller import recipe_controller
         from controllers.user_controller import user_controller
 
@@ -62,6 +63,7 @@ def create_app():
         app.register_blueprint(user_controller, url_prefix="/api/users")
         app.register_blueprint(recipe_controller, url_prefix="/api/recipes")
         app.register_blueprint(eats_controller, url_prefix="/api/eats")
+        app.register_blueprint(rating_controller, url_prefix="/api/rating")
 
         # app.register_blueprint(auth_controller, url_prefix="/api/auth")
 

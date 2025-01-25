@@ -59,8 +59,20 @@ export const recipeService = {
     return response.data;
   },
   getRecipeById: async (id) => {
-    const response = await api.get(`/recipes/${id}`);
-    return response.data;
+    try {
+      const userId = localStorage.getItem('userId');
+      const response = await api.get(`/recipes/${id}`, {
+        params: { user_id: userId }
+      });
+      console.log('Recipe response:', response.data); // For debugging
+      if (response.data.status === 'success') {
+        return response.data.data;
+      }
+      throw new Error(response.data.message || 'Failed to fetch recipe');
+    } catch (error) {
+      console.error('Error fetching recipe:', error);
+      throw error;
+    }
   },
   logEatenRecipe: async (userId, recipeId) => {
     const response = await api.post('/eats/eats', {
@@ -108,6 +120,30 @@ export const dietService = {
   getAllDiets: async () => {
     const response = await api.get('/diets');
     return response.data;
+  }
+};
+
+export const ratingService = {
+  rateRecipe: async (recipeId, rating) => {
+    try {
+      const response = await api.post('/rating/rate', {
+        recipe_id: recipeId,
+        rating: rating
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error rating recipe:', error);
+      throw error;
+    }
+  },
+  getUserRating: async (recipeId) => {
+    try {
+      const response = await api.get(`/rating/user-rating/${recipeId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error getting user rating:', error);
+      throw error;
+    }
   }
 };
 
