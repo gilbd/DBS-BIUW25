@@ -5,13 +5,31 @@ const api = axios.create({
 });
 
 // Request interceptor for adding auth token
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
-  return config;
-});
+);
+
+// Response interceptor for handling auth errors
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      // Clear token and redirect to login if unauthorized
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
 
 export const authService = {
   login: async (credentials) => {
@@ -67,12 +85,22 @@ export const recipeService = {
 
 export const userService = {
   updateProfile: async (data) => {
-    const response = await api.put('/users/profile', data);
-    return response.data;
+    try {
+      const response = await api.put('/users/profile', data);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      throw error;
+    }
   },
   getProfile: async () => {
-    const response = await api.get('/users/profile');
-    return response.data;
+    try {
+      const response = await api.get('/users/profile');
+      return response.data;
+    } catch (error) {
+      console.error('Error getting profile:', error);
+      throw error;
+    }
   }
 };
 

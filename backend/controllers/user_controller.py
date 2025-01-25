@@ -96,36 +96,67 @@ def calculate_age_group(date_of_birth):
 @token_required
 def get_profile(current_user):
     try:
-        result = db.session.execute(
-            text(
-                """
-                SELECT u.*, uag.age_group 
-                FROM user u 
-                LEFT JOIN user_age_group uag ON u.user_id = uag.user_id 
+        logger.info(f"Getting profile for user: {current_user.user_id}")
+
+        # Get user profile with age group
+        query = """
+            SELECT 
+                u.*,
+                uag.age_group,
+                GROUP_CONCAT(d.name) as diets
+                FROM user u
+                LEFT JOIN user_age_group uag ON u.user_id = uag.user_id
+                LEFT JOIN user_diet ud ON u.user_id = ud.user_id
+                LEFT JOIN diet d ON ud.diet_id = d.diet_id
                 WHERE u.user_id = :user_id
+                GROUP BY u.user_id, uag.age_group
             """
-            ),
+        result = db.session.execute(
+            text(query),
             {"user_id": current_user.user_id},
         ).first()
 
         if not result:
-            return jsonify({"error": "User not found"}), 404
+            logger.error(f"User not found: {current_user.user_id}")
+            return jsonify({"status": "error", "message": "User not found"}), 404
 
-        return jsonify(
-            {
-                "user_id": result.user_id,
-                "name": result.name,
-                "email": result.email,
-                "date_of_birth": result.date_of_birth.isoformat(),
-                "weight": result.weight,
-                "height": result.height,
-                "sex": result.sex,
-                "age_group": result.age_group or calculate_age_group(result.date_of_birth),
-            }
-        )
+        # Calculate age group if not set
+        age_group = result.age_group
+        if not age_group and result.date_of_birth:
+            age_group = calculate_age_group(result.date_of_birth)
+
+            # Update age group in database
+            query = """
+                INSERT INTO user_age_group (user_id, age_group)
+                VALUES (:user_id, :age_group)
+                ON DUPLICATE KEY UPDATE age_group = :age_group
+            """
+            logger.info(f"Updating age group for user {current_user.user_id} to {age_group}")
+            db.session.execute(
+                text(query),
+                {"user_id": current_user.user_id, "age_group": age_group},
+            )
+            db.session.commit()
+
+        # Format response
+        response_data = {
+            "user_id": result.user_id,
+            "name": result.name,
+            "email": result.email,
+            "date_of_birth": result.date_of_birth.isoformat() if result.date_of_birth else None,
+            "weight": float(result.weight) if result.weight else None,
+            "height": float(result.height) if result.height else None,
+            "sex": result.sex,
+            "age_group": age_group,
+            "diets": result.diets.split(",") if result.diets else [],
+        }
+
+        logger.info(f"Profile data retrieved successfully: {response_data}")
+        return jsonify({"status": "success", "data": response_data})
+
     except Exception as e:
         logger.error(f"Error getting profile: {str(e)}", exc_info=True)
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 
 @user_controller.route("/profile", methods=["PUT"])
@@ -133,6 +164,7 @@ def get_profile(current_user):
 def update_profile(current_user):
     try:
         data = request.get_json()
+        logger.info(f"Updating profile for user {current_user.user_id} with data: {data}")
 
         # Update user table
         update_query = """
@@ -171,9 +203,32 @@ def update_profile(current_user):
             {"user_id": current_user.user_id, "age_group": age_group},
         )
 
+        # Update diets if provided
+        if "diets" in data:
+            # First remove existing diets
+            db.session.execute(
+                text("DELETE FROM user_diet WHERE user_id = :user_id"),
+                {"user_id": current_user.user_id},
+            )
+
+            # Then add new diets
+            if data["diets"]:
+                for diet_name in data["diets"]:
+                    db.session.execute(
+                        text(
+                            """
+                            INSERT INTO user_diet (user_id, diet_id)
+                            SELECT :user_id, diet_id FROM diet WHERE name = :diet_name
+                        """
+                        ),
+                        {"user_id": current_user.user_id, "diet_name": diet_name},
+                    )
+
         db.session.commit()
-        return jsonify({"message": "Profile updated successfully"})
+        logger.info(f"Profile updated successfully for user {current_user.user_id}")
+        return jsonify({"status": "success", "message": "Profile updated successfully"})
+
     except Exception as e:
         logger.error(f"Error updating profile: {str(e)}", exc_info=True)
         db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"status": "error", "message": str(e)}), 500

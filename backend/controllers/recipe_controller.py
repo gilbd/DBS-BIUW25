@@ -43,6 +43,7 @@ def get_recipe(id):
     if result:
         recipe = Recipe.query.get(result[0])
         return jsonify(recipe.to_dict()), 200
+    logger.error(f"Recipe not found for retrieval: {id}")
     return jsonify({"message": "Recipe not found"}), 404
 
 
@@ -75,6 +76,7 @@ def update_recipe(id):
         db.session.commit()
         recipe = Recipe.query.get(result[0])
         return jsonify(recipe.to_dict()), 200
+    logger.error(f"Recipe not found for update: {id}")
     return jsonify({"message": "Recipe not found"}), 404
 
 
@@ -86,6 +88,7 @@ def delete_recipe(id):
     if result:
         db.session.commit()
         return jsonify({"message": "Recipe deleted"}), 200
+    logger.error(f"Recipe not found for deletion: {id}")
     return jsonify({"message": "Recipe not found"}), 404
 
 
@@ -93,19 +96,28 @@ def delete_recipe(id):
 def get_recommendations():
     try:
         user_id = request.args.get("user_id")
+        if not user_id:
+            logger.error("User ID is required")
+            return jsonify({"status": "error", "message": "User ID is required"}), 400
 
         query = """
-            SELECT * FROM recipe 
-            ORDER BY RANDOM() 
+            SELECT r.* FROM recipe r
+            WHERE NOT EXISTS (
+                SELECT 1 FROM eats e
+                WHERE e.recipe_id = r.recipe_id
+                AND e.user_id = :user_id
+            )
+            ORDER BY RAND()
             LIMIT 5;
         """
-        result = db.session.execute(text(query))
+        result = db.session.execute(text(query), {"user_id": user_id})
         recipes = [Recipe.query.get(row[0]) for row in result]
         recipes_data = [recipe.to_dict(user_id=user_id) for recipe in recipes]
 
         return jsonify({"status": "success", "data": recipes_data}), 200
 
     except Exception as e:
+        logger.error(f"Error in get_recommendations: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
@@ -114,6 +126,7 @@ def get_recent_recipes():
     try:
         user_id = request.args.get("user_id")
         if not user_id:
+            logger.error("User ID is required")
             return jsonify({"status": "error", "message": "User ID is required"}), 400
 
         query = """
@@ -121,7 +134,8 @@ def get_recent_recipes():
             FROM recipe r
             JOIN eats e ON r.recipe_id = e.recipe_id
             WHERE e.user_id = :user_id
-            ORDER BY e.created_at DESC
+            GROUP BY r.recipe_id
+            ORDER BY MAX(e.created_at) DESC
             LIMIT 3;
         """
         result = db.session.execute(text(query), {"user_id": user_id})
@@ -131,6 +145,7 @@ def get_recent_recipes():
         return jsonify({"status": "success", "data": recipes_data}), 200
 
     except Exception as e:
+        logger.error(f"Error in get_recent_recipes: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
@@ -148,18 +163,20 @@ def get_new_recommendation():
                 WHERE e.recipe_id = r.recipe_id
                 AND e.user_id = :user_id
             )
-            ORDER BY RANDOM()
+            ORDER BY RAND()
             LIMIT 1;
         """
         result = db.session.execute(text(query), {"user_id": user_id}).first()
 
         if not result:
+            logger.error("No new recipes available")
             return jsonify({"status": "error", "message": "No new recipes available"}), 404
 
         recipe = Recipe.query.get(result[0])
         return jsonify({"status": "success", "data": recipe.to_dict(user_id=user_id)}), 200
 
     except Exception as e:
+        logger.error(f"Error in get_new_recommendation: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
 

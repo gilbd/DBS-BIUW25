@@ -8,7 +8,6 @@ import {
   CardContent,
   CardMedia,
   Typography,
-  Rating,
   FormControl,
   InputLabel,
   Select,
@@ -119,9 +118,13 @@ function RecipeSearch() {
                 label="Diet"
               >
                 <MenuItem value="">All</MenuItem>
-                <MenuItem value="vegetarian">Vegetarian</MenuItem>
+                <MenuItem value="dairy_free">Dairy Free</MenuItem>
+                <MenuItem value="egg_allergy">Egg Allergy</MenuItem>
+                <MenuItem value="gluten_free">Gluten Free</MenuItem>
+                <MenuItem value="nut_allergy">Nut Allergy</MenuItem>
+                <MenuItem value="shellfish_allergy">Shellfish Allergy</MenuItem>
                 <MenuItem value="vegan">Vegan</MenuItem>
-                <MenuItem value="gluten-free">Gluten Free</MenuItem>
+                <MenuItem value="vegetarian">Vegetarian</MenuItem>
               </Select>
             </FormControl>
           </Grid>

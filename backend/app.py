@@ -27,6 +27,7 @@ def create_app():
                 "allow_headers": ["Content-Type", "Authorization"],
             }
         },
+        supports_credentials=True,
     )
 
     # Application configurations
@@ -58,7 +59,7 @@ def create_app():
 
         app.register_blueprint(admin_controller, url_prefix="/api/admin")
         app.register_blueprint(auth_controller, url_prefix="/api/auth")
-        app.register_blueprint(user_controller, url_prefix="/api/user")
+        app.register_blueprint(user_controller, url_prefix="/api/users")
         app.register_blueprint(recipe_controller, url_prefix="/api/recipes")
         app.register_blueprint(eats_controller, url_prefix="/api/eats")
 
