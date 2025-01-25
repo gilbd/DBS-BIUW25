@@ -57,4 +57,12 @@ ehthumbs.db
 */*.pyc
 */*.pyo
 */*.pyd
+.mypy_cache/
+# pytest
+.pytest_cache/
+__pycache__/
+*.pytest_cache
+pytest.ini
+.coverage
+htmlcov/
 
