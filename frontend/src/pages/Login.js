@@ -10,6 +10,7 @@ import {
   Box,
   Tabs,
   Tab,
+  Alert,
 } from '@mui/material';
 
 function Login() {
@@ -29,23 +30,15 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    
     try {
-      let credentials;
       if (loginMethod === 'email') {
-        credentials = { email, password };
+        await login({ email, password });
       } else {
-        credentials = { userId: parseInt(userId), password };
+        await login({ userId: parseInt(userId), password });
       }
-
-      const success = await login(credentials);
-      if (success) {
-        navigate('/');
-      } else {
-        setError('Invalid credentials');
-      }
+      navigate('/');
     } catch (err) {
-      setError('An error occurred during login');
+      setError(err.response?.data?.error || 'Failed to login');
     }
   };
 
@@ -63,6 +56,12 @@ function Login() {
           <Typography component="h1" variant="h5" align="center" gutterBottom>
             Recipe Recommendation App
           </Typography>
+
+          {error && (
+            <Alert severity="error" sx={{ mt: 2, width: '100%' }}>
+              {error}
+            </Alert>
+          )}
 
           <Tabs
             value={loginMethod}
@@ -110,12 +109,6 @@ function Login() {
               onChange={(e) => setPassword(e.target.value)}
             />
 
-            {error && (
-              <Typography color="error" align="center" sx={{ mt: 2 }}>
-                {error}
-              </Typography>
-            )}
-
             <Button
               type="submit"
               fullWidth
@@ -125,6 +118,33 @@ function Login() {
               Sign In
             </Button>
           </Box>
+        </Paper>
+
+        {/* Development Hints */}
+        <Paper 
+          elevation={0} 
+          sx={{ 
+            mt: 2, 
+            p: 2, 
+            bgcolor: '#f5f5f5', 
+            width: '100%',
+            borderRadius: 1
+          }}
+        >
+          <Typography variant="body2" color="text.secondary" align="center" sx={{ fontFamily: 'monospace' }}>
+            Development Login Credentials:
+            {loginMethod === 'email' ? (
+              <>
+                <br />User: 1972959@example.com / 123456
+                <br />Admin: 12657644@example.com / 123456
+              </>
+            ) : (
+              <>
+                <br />User: 1972959 / 123456
+                <br />Admin: 12657644 / 123456
+              </>
+            )}
+          </Typography>
         </Paper>
       </Box>
     </Container>

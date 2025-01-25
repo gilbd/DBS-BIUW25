@@ -55,14 +55,22 @@ CREATE TABLE dbs.nutrition (
     average_daily_value DECIMAL(10, 2) NOT NULL -- Daily recommended value
 );
 
--- User-Nutrition Relationship
-CREATE TABLE dbs.user_nutrition (
-    user_id INT NOT NULL,                -- User ID
-    nutrition_name VARCHAR(45) NOT NULL, -- Nutrition name
-    tracked_value DECIMAL(10, 2),       -- Tracked value (amount consumed)
-    PRIMARY KEY (user_id, nutrition_name),
-    FOREIGN KEY (user_id) REFERENCES dbs.user(user_id) ON DELETE CASCADE,
+-- Nutrition recommendations per age group and sex
+CREATE TABLE dbs.nutrition_per_age (
+    age_group VARCHAR(20) NOT NULL,         -- Age group (e.g., '0-3', '4-8', '9-13')
+    sex ENUM('M', 'F') NOT NULL,           -- Sex of the person
+    nutrition_name VARCHAR(45) NOT NULL,    -- Reference to nutrition
+    recommended_daily_value DECIMAL(10, 2) NOT NULL, -- Recommended daily value for this age/sex
+    PRIMARY KEY (age_group, sex, nutrition_name),
     FOREIGN KEY (nutrition_name) REFERENCES dbs.nutrition(name) ON DELETE CASCADE
+);
+
+-- User age group mapping
+CREATE TABLE dbs.user_age_group (
+    user_id INT NOT NULL,                   -- Reference to user
+    age_group VARCHAR(20) NOT NULL,         -- Age group the user belongs to
+    PRIMARY KEY (user_id),
+    FOREIGN KEY (user_id) REFERENCES dbs.user(user_id) ON DELETE CASCADE
 );
 
 -- Eats (User-Recipe) Relationship

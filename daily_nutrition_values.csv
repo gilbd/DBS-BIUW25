@@ -1,180 +1,161 @@
-Age Group,Sex,Nutrition Name,Unit,Recommended Daily Value
-14-18,M,Dietary Fiber,g,28
-14-18,F,Dietary Fiber,g,25
-19-30,M,Dietary Fiber,g,34
-19-30,F,Dietary Fiber,g,28
-31-50,M,Dietary Fiber,g,31
-31-50,F,Dietary Fiber,g,25
-51+,M,Dietary Fiber,g,28
-51+,F,Dietary Fiber,g,22
-
-14-18,M,Niacin Equivalents,mg,16
-14-18,F,Niacin Equivalents,mg,14
-19-30,M,Niacin Equivalents,mg,16
-19-30,F,Niacin Equivalents,mg,14
-31-50,M,Niacin Equivalents,mg,16
-31-50,F,Niacin Equivalents,mg,14
-51+,M,Niacin Equivalents,mg,16
-51+,F,Niacin Equivalents,mg,14
-
-14-18,M,Potassium,mg,3000
-14-18,F,Potassium,mg,2300
-19-30,M,Potassium,mg,3400
-19-30,F,Potassium,mg,2600
-31-50,M,Potassium,mg,3400
-31-50,F,Potassium,mg,2600
-51+,M,Potassium,mg,3400
-51+,F,Potassium,mg,2600
-
-14-18,M,Protein,g,52
-14-18,F,Protein,g,46
-19-30,M,Protein,g,56
-19-30,F,Protein,g,46
-31-50,M,Protein,g,56
-31-50,F,Protein,g,46
-51+,M,Protein,g,56
-51+,F,Protein,g,46
-
-14-18,M,Iron,mg,11
-14-18,F,Iron,mg,15
-19-30,M,Iron,mg,8
-19-30,F,Iron,mg,18
-31-50,M,Iron,mg,8
-31-50,F,Iron,mg,18
-51+,M,Iron,mg,8
-51+,F,Iron,mg,8
-
-14-18,M,Magnesium,mg,410
-14-18,F,Magnesium,mg,360
-19-30,M,Magnesium,mg,400
-19-30,F,Magnesium,mg,310
-31-50,M,Magnesium,mg,420
-31-50,F,Magnesium,mg,320
-51+,M,Magnesium,mg,420
-51+,F,Magnesium,mg,320
-
-14-18,M,Fat,g,70
-14-18,F,Fat,g,60
-19-30,M,Fat,g,70
-19-30,F,Fat,g,60
-31-50,M,Fat,g,70
-31-50,F,Fat,g,60
-51+,M,Fat,g,70
-51+,F,Fat,g,60
-
-14-18,M,Cholesterol,mg,300
-14-18,F,Cholesterol,mg,300
-19-30,M,Cholesterol,mg,300
-19-30,F,Cholesterol,mg,300
-31-50,M,Cholesterol,mg,300
-31-50,F,Cholesterol,mg,300
-51+,M,Cholesterol,mg,300
-51+,F,Cholesterol,mg,300
-
-14-18,M,Calories from Fat,kcal,700
-14-18,F,Calories from Fat,kcal,600
-19-30,M,Calories from Fat,kcal,700
-19-30,F,Calories from Fat,kcal,600
-31-50,M,Calories from Fat,kcal,700
-31-50,F,Calories from Fat,kcal,600
-51+,M,Calories from Fat,kcal,700
-51+,F,Calories from Fat,kcal,600
-
-14-18,M,Calories,kcal,2800
-14-18,F,Calories,kcal,2200
-19-30,M,Calories,kcal,2700
-19-30,F,Calories,kcal,2100
-31-50,M,Calories,kcal,2600
-31-50,F,Calories,kcal,2000
-51+,M,Calories,kcal,2400
-51+,F,Calories,kcal,1800
-
-14-18,M,Sugars,g,36
-14-18,F,Sugars,g,25
-19-30,M,Sugars,g,36
-19-30,F,Sugars,g,25
-31-50,M,Sugars,g,36
-31-50,F,Sugars,g,25
-51+,M,Sugars,g,36
-51+,F,Sugars,g,25
-
-14-18,M,Sodium,mg,2300
-14-18,F,Sodium,mg,2300
-19-30,M,Sodium,mg,2300
-19-30,F,Sodium,mg,2300
-31-50,M,Sodium,mg,2300
-31-50,F,Sodium,mg,2300
-51+,M,Sodium,mg,2300
-51+,F,Sodium,mg,2300
-
-14-18,M,Vitamin C,mg,75
-14-18,F,Vitamin C,mg,65
-19-30,M,Vitamin C,mg,90
-19-30,F,Vitamin C,mg,75
-31-50,M,Vitamin C,mg,90
-31-50,F,Vitamin C,mg,75
-51+,M,Vitamin C,mg,90
-51+,F,Vitamin C,mg,75
-
-14-18,M,Vitamin B6,mg,1.3
-14-18,F,Vitamin B6,mg,1.2
-19-30,M,Vitamin B6,mg,1.3
-19-30,F,Vitamin B6,mg,1.3
-31-50,M,Vitamin B6,mg,1.3
-31-50,F,Vitamin B6,mg,1.3
-51+,M,Vitamin B6,mg,1.7
-51+,F,Vitamin B6,mg,1.5
-
-14-18,M,Calcium,mg,1300
-14-18,F,Calcium,mg,1300
-19-30,M,Calcium,mg,1000
-19-30,F,Calcium,mg,1000
-31-50,M,Calcium,mg,1000
-31-50,F,Calcium,mg,1000
-51+,M,Calcium,mg,1000
-51+,F,Calcium,mg,1200
-
-14-18,M,Folate,mcg,400
-14-18,F,Folate,mcg,400
-19-30,M,Folate,mcg,400
-19-30,F,Folate,mcg,400
-31-50,M,Folate,mcg,400
-31-50,F,Folate,mcg,400
-51+,M,Folate,mcg,400
-51+,F,Folate,mcg,400
-
-14-18,M,Thiamin,mg,1.2
-14-18,F,Thiamin,mg,1.0
-19-30,M,Thiamin,mg,1.2
-19-30,F,Thiamin,mg,1.1
-31-50,M,Thiamin,mg,1.2
-31-50,F,Thiamin,mg,1.1
-51+,M,Thiamin,mg,1.2
-51+,F,Thiamin,mg,1.1
-
-14-18,M,Saturated Fat,g,20
-14-18,F,Saturated Fat,g,18
-19-30,M,Saturated Fat,g,20
-19-30,F,Saturated Fat,g,18
-31-50,M,Saturated Fat,g,20
-31-50,F,Saturated Fat,g,18
-51+,M,Saturated Fat,g,20
-51+,F,Saturated Fat,g,18
-
-14-18,M,Vitamin A - IU,IU,3000
-14-18,F,Vitamin A - IU,IU,2333
-19-30,M,Vitamin A - IU,IU,3000
-19-30,F,Vitamin A - IU,IU,2333
-31-50,M,Vitamin A - IU,IU,3000
-31-50,F,Vitamin A - IU,IU,2333
-51+,M,Vitamin A - IU,IU,3000
-51+,F,Vitamin A - IU,IU,2333
-
-14-18,M,Carbohydrates,g,130
-14-18,F,Carbohydrates,g,130
-19-30,M,Carbohydrates,g,130
-19-30,F,Carbohydrates,g,130
-31-50,M,Carbohydrates,g,130
-31-50,F,Carbohydrates,g,130
-51+,M,Carbohydrates,g,130
-51+,F,Carbohydrates,g,130
+age_group,sex,nutrition_name,recommended_daily_value
+14-18,M,Dietary Fiber,28.0
+14-18,F,Dietary Fiber,25.0
+19-30,M,Dietary Fiber,34.0
+19-30,F,Dietary Fiber,28.0
+31-50,M,Dietary Fiber,31.0
+31-50,F,Dietary Fiber,25.0
+51+,M,Dietary Fiber,28.0
+51+,F,Dietary Fiber,22.0
+14-18,M,Niacin Equivalents,16.0
+14-18,F,Niacin Equivalents,14.0
+19-30,M,Niacin Equivalents,16.0
+19-30,F,Niacin Equivalents,14.0
+31-50,M,Niacin Equivalents,16.0
+31-50,F,Niacin Equivalents,14.0
+51+,M,Niacin Equivalents,16.0
+51+,F,Niacin Equivalents,14.0
+14-18,M,Potassium,3000.0
+14-18,F,Potassium,2300.0
+19-30,M,Potassium,3400.0
+19-30,F,Potassium,2600.0
+31-50,M,Potassium,3400.0
+31-50,F,Potassium,2600.0
+51+,M,Potassium,3400.0
+51+,F,Potassium,2600.0
+14-18,M,Protein,52.0
+14-18,F,Protein,46.0
+19-30,M,Protein,56.0
+19-30,F,Protein,46.0
+31-50,M,Protein,56.0
+31-50,F,Protein,46.0
+51+,M,Protein,56.0
+51+,F,Protein,46.0
+14-18,M,Iron,11.0
+14-18,F,Iron,15.0
+19-30,M,Iron,8.0
+19-30,F,Iron,18.0
+31-50,M,Iron,8.0
+31-50,F,Iron,18.0
+51+,M,Iron,8.0
+51+,F,Iron,8.0
+14-18,M,Magnesium,410.0
+14-18,F,Magnesium,360.0
+19-30,M,Magnesium,400.0
+19-30,F,Magnesium,310.0
+31-50,M,Magnesium,420.0
+31-50,F,Magnesium,320.0
+51+,M,Magnesium,420.0
+51+,F,Magnesium,320.0
+14-18,M,Fat,70.0
+14-18,F,Fat,60.0
+19-30,M,Fat,70.0
+19-30,F,Fat,60.0
+31-50,M,Fat,70.0
+31-50,F,Fat,60.0
+51+,M,Fat,70.0
+51+,F,Fat,60.0
+14-18,M,Cholesterol,300.0
+14-18,F,Cholesterol,300.0
+19-30,M,Cholesterol,300.0
+19-30,F,Cholesterol,300.0
+31-50,M,Cholesterol,300.0
+31-50,F,Cholesterol,300.0
+51+,M,Cholesterol,300.0
+51+,F,Cholesterol,300.0
+14-18,M,Calories from Fat,700.0
+14-18,F,Calories from Fat,600.0
+19-30,M,Calories from Fat,700.0
+19-30,F,Calories from Fat,600.0
+31-50,M,Calories from Fat,700.0
+31-50,F,Calories from Fat,600.0
+51+,M,Calories from Fat,700.0
+51+,F,Calories from Fat,600.0
+14-18,M,Calories,2800.0
+14-18,F,Calories,2200.0
+19-30,M,Calories,2700.0
+19-30,F,Calories,2100.0
+31-50,M,Calories,2600.0
+31-50,F,Calories,2000.0
+51+,M,Calories,2400.0
+51+,F,Calories,1800.0
+14-18,M,Sugars,36.0
+14-18,F,Sugars,25.0
+19-30,M,Sugars,36.0
+19-30,F,Sugars,25.0
+31-50,M,Sugars,36.0
+31-50,F,Sugars,25.0
+51+,M,Sugars,36.0
+51+,F,Sugars,25.0
+14-18,M,Sodium,2300.0
+14-18,F,Sodium,2300.0
+19-30,M,Sodium,2300.0
+19-30,F,Sodium,2300.0
+31-50,M,Sodium,2300.0
+31-50,F,Sodium,2300.0
+51+,M,Sodium,2300.0
+51+,F,Sodium,2300.0
+14-18,M,Vitamin C,75.0
+14-18,F,Vitamin C,65.0
+19-30,M,Vitamin C,90.0
+19-30,F,Vitamin C,75.0
+31-50,M,Vitamin C,90.0
+31-50,F,Vitamin C,75.0
+51+,M,Vitamin C,90.0
+51+,F,Vitamin C,75.0
+14-18,M,Vitamin B6,1.3
+14-18,F,Vitamin B6,1.2
+19-30,M,Vitamin B6,1.3
+19-30,F,Vitamin B6,1.3
+31-50,M,Vitamin B6,1.3
+31-50,F,Vitamin B6,1.3
+51+,M,Vitamin B6,1.7
+51+,F,Vitamin B6,1.5
+14-18,M,Calcium,1300.0
+14-18,F,Calcium,1300.0
+19-30,M,Calcium,1000.0
+19-30,F,Calcium,1000.0
+31-50,M,Calcium,1000.0
+31-50,F,Calcium,1000.0
+51+,M,Calcium,1000.0
+51+,F,Calcium,1200.0
+14-18,M,Folate,400.0
+14-18,F,Folate,400.0
+19-30,M,Folate,400.0
+19-30,F,Folate,400.0
+31-50,M,Folate,400.0
+31-50,F,Folate,400.0
+51+,M,Folate,400.0
+51+,F,Folate,400.0
+14-18,M,Thiamin,1.2
+14-18,F,Thiamin,1.0
+19-30,M,Thiamin,1.2
+19-30,F,Thiamin,1.1
+31-50,M,Thiamin,1.2
+31-50,F,Thiamin,1.1
+51+,M,Thiamin,1.2
+51+,F,Thiamin,1.1
+14-18,M,Saturated Fat,20.0
+14-18,F,Saturated Fat,18.0
+19-30,M,Saturated Fat,20.0
+19-30,F,Saturated Fat,18.0
+31-50,M,Saturated Fat,20.0
+31-50,F,Saturated Fat,18.0
+51+,M,Saturated Fat,20.0
+51+,F,Saturated Fat,18.0
+14-18,M,Vitamin A - IU,3000.0
+14-18,F,Vitamin A - IU,2333.0
+19-30,M,Vitamin A - IU,3000.0
+19-30,F,Vitamin A - IU,2333.0
+31-50,M,Vitamin A - IU,3000.0
+31-50,F,Vitamin A - IU,2333.0
+51+,M,Vitamin A - IU,3000.0
+51+,F,Vitamin A - IU,2333.0
+14-18,M,Carbohydrates,130.0
+14-18,F,Carbohydrates,130.0
+19-30,M,Carbohydrates,130.0
+19-30,F,Carbohydrates,130.0
+31-50,M,Carbohydrates,130.0
+31-50,F,Carbohydrates,130.0
+51+,M,Carbohydrates,130.0
+51+,F,Carbohydrates,130.0

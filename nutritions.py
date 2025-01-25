@@ -1,5 +1,5 @@
-import csv
 import ast  # To safely evaluate the string as a dictionary
+import csv
 
 # File paths
 input_file = "core-data_recipe.csv"
@@ -9,7 +9,7 @@ contains_file = "contains.csv"
 # Set to store unique nutrition items
 unique_nutritions = set()
 nutrition_daily_values = {}
-recipe_contains = {}
+recipe_contains = []
 
 # Reading from input CSV
 with open(input_file, mode="r", encoding="utf-8") as infile:
@@ -45,7 +45,7 @@ with open(input_file, mode="r", encoding="utf-8") as infile:
                     # If both name and unit are available, add to the set
                     if nutrition_name and unit:
                         unique_nutritions.add((nutrition_name, unit))
-                        recipe_contains[recipe_id] = (nutrition_name, amount)
+                        recipe_contains.append((recipe_id, nutrition_name, amount))
             except (ValueError, SyntaxError) as e:
                 # Handle errors in the case of invalid 'nutritions' column
                 print(f"Error parsing nutritions data: {e} for row: {row}")
@@ -66,7 +66,7 @@ with open(output_file, mode="w", newline="", encoding="utf-8") as outfile:
 with open(contains_file, mode="w", newline="", encoding="utf-8") as outfile:
     writer = csv.writer(outfile)
     writer.writerow(["recipe_id", "nutrition_name", "amount"])
-    for recipe_id, (nutrition_name, amount) in recipe_contains.items():
+    for recipe_id, nutrition_name, amount in recipe_contains:
         writer.writerow([recipe_id, nutrition_name, amount])
 
 print(f"Nutrition data has been extracted to {output_file}.")
