@@ -10,7 +10,11 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Alert
+  Alert,
+  ToggleButton,
+  ToggleButtonGroup,
+  Link,
+  CircularProgress
 } from '@mui/material';
 import {
   BarChart,
@@ -25,6 +29,7 @@ import {
 } from 'recharts';
 import Layout from '../components/layout/Layout';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 function AdminDashboard() {
   const [weeklyStats, setWeeklyStats] = useState([]);
@@ -32,6 +37,10 @@ function AdminDashboard() {
   const [dietViolations, setDietViolations] = useState([]);
   const [calorieViolations, setCalorieViolations] = useState([]);
   const [error, setError] = useState('');
+  const [topRated, setTopRated] = useState([]);
+  const [ratingPeriod, setRatingPeriod] = useState('all');
+  const [isTopRatedLoading, setIsTopRatedLoading] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -85,6 +94,20 @@ function AdminDashboard() {
         if (calorieResponse.data.status === 'success') {
           setCalorieViolations(calorieResponse.data.data);
         }
+
+        // Fetch top rated recipes
+        console.log('Fetching top rated recipes...');
+        setIsTopRatedLoading(true);  // Start loading
+        setTopRated([]); // Clear existing data
+        const topRatedResponse = await axios.get(`/api/admin/stats/top-rated?period=${ratingPeriod}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        console.log('Top rated response:', topRatedResponse);
+        if (topRatedResponse.data.status === 'success') {
+          setTopRated(topRatedResponse.data.data);
+        }
       } catch (err) {
         console.error('Error details:', {
           message: err.message,
@@ -93,11 +116,23 @@ function AdminDashboard() {
           headers: err.response?.headers
         });
         setError(err.response?.data?.message || 'Failed to fetch admin statistics');
+      } finally {
+        setIsTopRatedLoading(false);  // End loading
       }
     };
 
     fetchData();
-  }, []);
+  }, [ratingPeriod]);
+
+  const handlePeriodChange = (event, newPeriod) => {
+    if (newPeriod !== null) {
+      setRatingPeriod(newPeriod);
+    }
+  };
+
+  const handleRecipeClick = (recipeId) => {
+    navigate(`/recipe/${recipeId}`);
+  };
 
   return (
     <Layout>
@@ -157,14 +192,16 @@ function AdminDashboard() {
                 <Table>
                   <TableHead>
                     <TableRow>
+                      <TableCell>User ID</TableCell>
                       <TableCell>User</TableCell>
                       <TableCell>Recipe</TableCell>
-                      <TableCell>Diet Violated</TableCell>
+                      <TableCell>Diet</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {dietViolations.map((violation, index) => (
                       <TableRow key={index}>
+                        <TableCell>{violation.userId}</TableCell>
                         <TableCell>{violation.user}</TableCell>
                         <TableCell>{violation.recipe}</TableCell>
                         <TableCell>{violation.diet}</TableCell>
@@ -186,6 +223,7 @@ function AdminDashboard() {
                 <Table>
                   <TableHead>
                     <TableRow>
+                      <TableCell>User ID</TableCell>
                       <TableCell>User</TableCell>
                       <TableCell>Age Group</TableCell>
                       <TableCell>Sex</TableCell>
@@ -205,6 +243,7 @@ function AdminDashboard() {
                             '#fff'
                         }}
                       >
+                        <TableCell>{violation.userId}</TableCell>
                         <TableCell>{violation.user}</TableCell>
                         <TableCell>{violation.ageGroup}</TableCell>
                         <TableCell>{violation.sex}</TableCell>
@@ -229,6 +268,80 @@ function AdminDashboard() {
                     ))}
                   </TableBody>
                 </Table>
+              </TableContainer>
+            </Paper>
+          </Grid>
+
+          {/* Top Rated Recipes Table */}
+          <Grid item xs={12}>
+            <Paper sx={{ p: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h6">
+                  Top Rated Recipes
+                </Typography>
+                <ToggleButtonGroup
+                  value={ratingPeriod}
+                  exclusive
+                  onChange={handlePeriodChange}
+                  size="small"
+                >
+                  <ToggleButton value="all">
+                    All Time
+                  </ToggleButton>
+                  <ToggleButton value="week">
+                    Last Week
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </Box>
+              <TableContainer>
+                {isTopRatedLoading ? (
+                  <Box sx={{ 
+                    display: 'flex', 
+                    justifyContent: 'center', 
+                    alignItems: 'center', 
+                    height: 200 
+                  }}>
+                    <CircularProgress />
+                  </Box>
+                ) : (
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Recipe ID</TableCell>
+                        <TableCell>Recipe Name</TableCell>
+                        <TableCell align="right">Average Rating</TableCell>
+                        <TableCell align="right">Number of Ratings</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {topRated.map((recipe) => (
+                        <TableRow key={recipe.recipeId}>
+                          <TableCell>{recipe.recipeId}</TableCell>
+                          <TableCell>
+                            <Link
+                              component="button"
+                              onClick={() => handleRecipeClick(recipe.recipeId)}
+                              sx={{ 
+                                textDecoration: 'none',
+                                '&:hover': {
+                                  textDecoration: 'underline'
+                                }
+                              }}
+                            >
+                              {recipe.recipeName}
+                            </Link>
+                          </TableCell>
+                          <TableCell align="right">
+                            {recipe.avgRating.toFixed(2)} ⭐
+                          </TableCell>
+                          <TableCell align="right">
+                            {recipe.ratingCount}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </TableContainer>
             </Paper>
           </Grid>

@@ -107,6 +107,7 @@ def get_diet_violations(current_user):
 
         query = """
             SELECT 
+                u.user_id,
                 u.name as user_name,
                 r.recipe_name,
                 d.name as diet_name,
@@ -128,7 +129,12 @@ def get_diet_violations(current_user):
         logger.info(f"Executing query: {query}")
         result = db.session.execute(text(query))
         violations = [
-            {"user": row.user_name, "recipe": row.recipe_name, "diet": row.diet_name}
+            {
+                "userId": row.user_id,
+                "user": row.user_name,
+                "recipe": row.recipe_name,
+                "diet": row.diet_name,
+            }
             for row in result
         ]
         logger.info(f"Diet violations results: {violations}")
@@ -174,6 +180,7 @@ def get_calorie_violations(current_user):
                     DATE(e.created_at), npa.recommended_daily_value
             )
             SELECT 
+                user_id,
                 user_name,
                 age_group,
                 sex,
@@ -187,7 +194,7 @@ def get_calorie_violations(current_user):
             FROM UserDailyCalories
             GROUP BY 
                 user_id, user_name, age_group, sex, recommended_calories
-            HAVING AVG(daily_calories) > (recommended_calories * 1.4)  -- 40% more than recommended
+            HAVING AVG(daily_calories) > (recommended_calories * 1.4)
             ORDER BY excess_percentage DESC
             LIMIT 10;
         """
@@ -195,6 +202,7 @@ def get_calorie_violations(current_user):
         result = db.session.execute(text(query))
         violations = [
             {
+                "userId": row.user_id,
                 "user": row.user_name,
                 "ageGroup": row.age_group,
                 "sex": row.sex,
@@ -209,4 +217,50 @@ def get_calorie_violations(current_user):
         return jsonify({"status": "success", "data": violations})
     except Exception as e:
         logger.error(f"Error in get_calorie_violations: {str(e)}", exc_info=True)
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@admin_controller.route("/stats/top-rated", methods=["GET"])
+@admin_required
+def get_top_rated(current_user):
+    try:
+        period = request.args.get("period", "all")  # 'week' or 'all'
+        logger.info(f"Getting top rated recipes for period: {period}")
+
+        time_filter = (
+            "AND rt.created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)" if period == "week" else ""
+        )
+
+        query = f"""
+            SELECT 
+                r.recipe_id,
+                r.recipe_name,
+                ROUND(AVG(rt.rating), 2) as avg_rating,
+                COUNT(rt.rating) as rating_count
+            FROM recipe r
+            LEFT JOIN rating rt ON r.recipe_id = rt.recipe_id
+            WHERE rt.rating IS NOT NULL
+            {time_filter}
+            GROUP BY r.recipe_id, r.recipe_name
+            HAVING rating_count >= 3  -- Minimum ratings threshold
+            ORDER BY avg_rating DESC, rating_count DESC
+            LIMIT 10;
+        """
+
+        logger.info(f"Executing query: {query}")
+        result = db.session.execute(text(query))
+        top_rated = [
+            {
+                "recipeId": row.recipe_id,
+                "recipeName": row.recipe_name,
+                "avgRating": float(row.avg_rating),
+                "ratingCount": row.rating_count,
+            }
+            for row in result
+        ]
+        logger.info(f"Top rated results: {top_rated}")
+
+        return jsonify({"status": "success", "data": top_rated})
+    except Exception as e:
+        logger.error(f"Error in get_top_rated: {str(e)}", exc_info=True)
         return jsonify({"status": "error", "message": str(e)}), 500
