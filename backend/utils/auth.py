@@ -20,25 +20,36 @@ def token_required(f):
 
         if auth_header:
             try:
-                token = auth_header.split(" ")[1]
+                token = auth_header.split(" ")[1]  # Bearer <token>
             except IndexError:
-                return jsonify({"error": "Invalid token format"}), 401
+                logger.error("Malformed authorization header")
+                return jsonify({"status": "error", "message": "Invalid token format"}), 401
 
         if not token:
-            return jsonify({"error": "Token is missing"}), 401
+            logger.error("No token provided")
+            return jsonify({"status": "error", "message": "Token is missing"}), 401
 
         try:
             data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
             result = db.session.execute(
                 text("SELECT * FROM user WHERE user_id = :user_id"), {"user_id": data["user_id"]}
             ).first()
-            current_user = User.query.get(result) if result else None
+            current_user = User.query.get(result[0]) if result else None
             if not current_user:
-                return jsonify({"error": "User not found"}), 404
-        except:
-            return jsonify({"error": "Invalid token"}), 401
+                logger.error(f"User not found for token payload: {data}")
+                return jsonify({"status": "error", "message": "User not found"}), 401
 
-        return f(current_user, *args, **kwargs)
+            return f(current_user, *args, **kwargs)
+
+        except jwt.ExpiredSignatureError:
+            logger.error("Token has expired")
+            return jsonify({"status": "error", "message": "Token has expired"}), 401
+        except jwt.InvalidTokenError as e:
+            logger.error(f"Invalid token: {str(e)}")
+            return jsonify({"status": "error", "message": "Invalid token"}), 401
+        except Exception as e:
+            logger.error(f"Error processing token: {str(e)}", exc_info=True)
+            return jsonify({"status": "error", "message": "Error processing token"}), 401
 
     return decorated
 

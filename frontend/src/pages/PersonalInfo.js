@@ -18,10 +18,19 @@ function PersonalInfo() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const data = await userService.getProfile();
-        setProfile(data);
+        const response = await userService.getProfile();
+        if (response.status === 'success') {
+          setProfile(response.data);
+        } else {
+          setError(response.message || 'Failed to load profile');
+        }
       } catch (err) {
-        setError('Failed to load profile');
+        console.error('Error fetching profile:', err);
+        if (err.response?.status === 401) {
+          setError('Please log in to view your profile');
+        } else {
+          setError(err.response?.data?.message || 'Failed to load profile');
+        }
       }
     };
 
