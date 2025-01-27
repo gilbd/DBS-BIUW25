@@ -120,3 +120,36 @@ def get_user_rating(current_user, recipe_id):
     except Exception as e:
         logger.error(f"Error getting recipe rating: {str(e)}", exc_info=True)
         return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@rating_controller.route("/average/<int:recipe_id>", methods=["GET"])
+def get_average_rating(recipe_id):
+    try:
+        logger.info(f"Getting average rating for recipe {recipe_id}")
+
+        result = db.session.execute(
+            text(
+                """
+                SELECT 
+                    AVG(rating) as avg_rating,
+                    COUNT(*) as total_ratings
+                FROM rating 
+                WHERE recipe_id = :recipe_id
+            """
+            ),
+            {"recipe_id": recipe_id},
+        ).first()
+
+        return jsonify(
+            {
+                "status": "success",
+                "data": {
+                    "average": float(result.avg_rating) if result.avg_rating else 0,
+                    "total": result.total_ratings,
+                },
+            }
+        )
+
+    except Exception as e:
+        logger.error(f"Error getting average rating: {str(e)}", exc_info=True)
+        return jsonify({"status": "error", "message": str(e)}), 500

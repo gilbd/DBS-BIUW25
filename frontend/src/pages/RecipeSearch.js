@@ -21,7 +21,6 @@ import Layout from '../components/layout/Layout';
 import RecipeDialog from '../components/RecipeDialog';
 import { useAuth } from '../contexts/AuthContext';
 import { dietService } from '../services/api';
-import StarIcon from '@mui/icons-material/Star';
 
 function RecipeSearch() {
   const [searchParams, setSearchParams] = useState({
@@ -85,6 +84,7 @@ function RecipeSearch() {
       
       const response = await recipeService.searchRecipes(filteredParams);
       if (response.status === 'success' && Array.isArray(response.data)) {
+        console.log('Search results:', response.data); // Debug log
         setRecipes(response.data);
       }
     } catch (error) {
@@ -100,10 +100,15 @@ function RecipeSearch() {
     }));
   };
 
-  const handleRecipeClick = async (recipeId) => {
+  const handleCardClick = async (recipe, event) => {
+    // Don't open dialog if clicking on rating
+    if (event.target.closest('.MuiRating-root')) {
+      return;
+    }
+    
     try {
-      const recipeData = await recipeService.getRecipeById(recipeId);
-      console.log('Recipe data:', recipeData); // Debug log
+      const recipeData = await recipeService.getRecipeById(recipe.recipe_id);
+      console.log('Recipe data:', recipeData);
       setSelectedRecipe(recipeData);
       setDialogOpen(true);
     } catch (error) {
@@ -216,7 +221,7 @@ function RecipeSearch() {
                     transition: 'transform 0.2s ease-in-out'
                   }
                 }}
-                onClick={() => handleRecipeClick(recipe.recipe_id)}
+                onClick={(e) => handleCardClick(recipe, e)}
               >
                 <CardMedia
                   component="img"
@@ -232,7 +237,13 @@ function RecipeSearch() {
                     Time: {recipe.total_time} minutes
                   </Typography>
                   {recipe.is_eaten && (
-                    <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 1 }}>
+                    <Stack 
+                      direction="row" 
+                      alignItems="center" 
+                      spacing={1} 
+                      sx={{ mt: 1 }}
+                      className="rating-container"
+                    >
                       <Typography component="legend" variant="body2">
                         Your Rating:
                       </Typography>
@@ -275,7 +286,10 @@ function RecipeSearch() {
         <RecipeDialog
           open={dialogOpen}
           recipe={selectedRecipe}
-          onClose={() => setDialogOpen(false)}
+          onClose={() => {
+            setDialogOpen(false);
+            setSelectedRecipe(null);
+          }}
           onEat={handleEatRecipe}
         />
       </Box>

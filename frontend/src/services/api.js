@@ -55,8 +55,16 @@ export const recipeService = {
     return response.data;
   },
   searchRecipes: async (params) => {
-    const response = await api.get('/recipes/search', { params });
-    return response.data;
+    try {
+      const userId = localStorage.getItem('userId');
+      const response = await api.get('/recipes/search', { 
+        params: { ...params, user_id: userId }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error searching recipes:', error);
+      throw error;
+    }
   },
   getRecipeById: async (id) => {
     try {
@@ -64,9 +72,11 @@ export const recipeService = {
       const response = await api.get(`/recipes/${id}`, {
         params: { user_id: userId }
       });
-      console.log('Recipe response:', response.data); // For debugging
+      console.log('Recipe response:', response.data);
       if (response.data.status === 'success') {
         return response.data.data;
+      } else if (response.data.recipe) {  // Handle old response format
+        return response.data.recipe;
       }
       throw new Error(response.data.message || 'Failed to fetch recipe');
     } catch (error) {
@@ -82,10 +92,16 @@ export const recipeService = {
     return response.data;
   },
   getRecentRecipes: async (userId) => {
-    const response = await api.get('/recipes/recent', {
-      params: { user_id: userId }
-    });
-    return response.data;
+    try {
+      const response = await api.get('/recipes/recent', {
+        params: { user_id: userId }
+      });
+      console.log('Recent recipes response:', response.data); // Debug log
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching recent recipes:', error);
+      throw error;
+    }
   },
   getNewRecommendation: async (userId) => {
     const response = await api.get('/recipes/new-recommendation', {
@@ -142,6 +158,15 @@ export const ratingService = {
       return response.data;
     } catch (error) {
       console.error('Error getting user rating:', error);
+      throw error;
+    }
+  },
+  getAverageRating: async (recipeId) => {
+    try {
+      const response = await api.get(`/rating/average/${recipeId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error getting average rating:', error);
       throw error;
     }
   }

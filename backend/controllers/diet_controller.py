@@ -6,14 +6,14 @@ diet_controller = Blueprint("diet_controller", __name__)
 
 
 # Get all diets
-@diet_controller.route("/diets", methods=["GET"])
+@diet_controller.route("/", methods=["GET"])
 def get_all_diets():
     diets = Diet.query.all()
     return jsonify([diet.to_dict() for diet in diets])
 
 
 # Get a single diet by ID
-@diet_controller.route("/diets/<int:diet_id>", methods=["GET"])
+@diet_controller.route("/<int:diet_id>", methods=["GET"])
 def get_diet(diet_id):
     diet = Diet.query.get(diet_id)
     if diet:
@@ -22,7 +22,7 @@ def get_diet(diet_id):
 
 
 # Create a new diet
-@diet_controller.route("/diets", methods=["POST"])
+@diet_controller.route("", methods=["POST"])
 def create_diet():
     name = request.json.get("name")
     keywords = request.json.get("keywords")
@@ -38,7 +38,7 @@ def create_diet():
 
 
 # Update an existing diet
-@diet_controller.route("/diets/<int:diet_id>", methods=["PUT"])
+@diet_controller.route("/<int:diet_id>", methods=["PUT"])
 def update_diet(diet_id):
     diet = Diet.query.get(diet_id)
     if not diet:
@@ -53,7 +53,7 @@ def update_diet(diet_id):
 
 
 # Delete a diet
-@diet_controller.route("/diets/<int:diet_id>", methods=["DELETE"])
+@diet_controller.route("/<int:diet_id>", methods=["DELETE"])
 def delete_diet(diet_id):
     diet = Diet.query.get(diet_id)
     if not diet:
