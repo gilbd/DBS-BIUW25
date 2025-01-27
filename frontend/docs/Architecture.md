@@ -1,106 +1,171 @@
-# Recipe Recommendation App - Architecture Documentation
+# Recipe Recommendation Frontend - Architecture Documentation
 
 ## Overview
-The Recipe Recommendation App is a React-based frontend application that interfaces with a Flask backend API. The application follows a component-based architecture with state management through React Context.
+The frontend is a React-based single-page application (SPA) that provides an intuitive interface for recipe discovery, management, and interaction. It follows component-based architecture with clear separation of concerns.
 
 ## Directory Structure
 ```
 frontend/
-├── docs/
-│   ├── Architecture.md
-│   └── Development.md
-├── src/
-│   ├── components/
-│   │   ├── common/           # Shared components
-│   │   │   ├── PrivateRoute.js
-│   │   │   └── AdminRoute.js
-│   │   ├── layout/          # Layout components (Navbar, Footer)
-│   │   └── recipe/          # Recipe-specific components
-│   ├── contexts/            # React Context providers
-│   │   └── AuthContext.js
-│   ├── pages/              # Main application pages
-│   │   ├── Login.js
+├── public/                # Static files
+│   ├── index.html
+│   ├── manifest.json
+│   └── assets/
+├── src/                   # Source code
+│   ├── components/        # Reusable UI components
+│   │   ├── layout/
+│   │   │   ├── Layout.js
+│   │   │   ├── Navbar.js
+│   │   │   └── Footer.js
+│   │   ├── RecipeDialog.js
+│   │   ├── RatingModal.js
+│   │   └── common/
+│   ├── pages/            # Page components
 │   │   ├── MainPage.js
-│   │   ├── PersonalInfo.js
 │   │   ├── RecipeSearch.js
-│   │   └── AdminDashboard.js
-│   ├── services/           # API and external services
-│   │   └── api.js
-│   ├── utils/             # Helper functions and constants
-│   ├── App.js
-│   └── index.js
-└── package.json
+│   │   ├── LoginPage.js
+│   │   └── ProfilePage.js
+│   ├── services/         # API services
+│   │   ├── api.js
+│   │   └── auth.js
+│   ├── contexts/         # React contexts
+│   │   └── AuthContext.js
+│   ├── hooks/            # Custom hooks
+│   ├── utils/            # Helper functions
+│   └── App.js            # Root component
+├── .env.development      # Development environment variables
+└── package.json          # Project dependencies
 ```
 
 ## Core Components
 
-### 1. Authentication System
+### 1. Pages
+- **MainPage**: Dashboard with recommendations and recent recipes
+- **RecipeSearch**: Advanced recipe search with filters
+- **LoginPage**: User authentication
+- **ProfilePage**: User preferences and settings
+
+### 2. Components
+- **RecipeDialog**: Detailed recipe view with nutrition info
+- **RatingModal**: Recipe rating interface
+- **Layout**: Page structure with navigation
+- **Common Components**: Reusable UI elements
+
+### 3. Services
+- **API Service**: 
+  - Recipe operations (search, fetch, rate)
+  - User operations
+  - Authentication
+- **Auth Service**: Token management and auth state
+
+## Key Features
+
+### Recipe Management
+- Recipe search with multiple filters
+- Detailed recipe view with nutrition information
+- Recipe rating system
+- Mark recipes as eaten
+- Recent recipes tracking
+
+### User Features
 - JWT-based authentication
-- Protected routes for authenticated users
-- Admin-specific routes and permissions
-- Persistent login state
+- User preferences
+- Dietary restrictions
+- Rating history
+- Eaten recipes history
 
-### 2. Main Features
-- Recipe recommendation engine
-- User profile management
-- Recipe search and filtering
-- Admin dashboard with analytics
+## State Management
 
-### 3. State Management
-- AuthContext for user authentication
-- Local state for component-specific data
-- API integration through service layer
+### Context API
+- **AuthContext**: User authentication state
+- **ThemeContext**: UI theme preferences
 
-## Technical Stack
+### Local State
+- Component-level state using useState
+- Form state management
+- UI state (modals, loading states)
 
-### Frontend Framework
-- React 18+
-- React Router v6 for routing
-- Material-UI (MUI) for UI components
+## API Integration
 
-### State Management
-- React Context API
-- Local component state
-- Custom hooks for shared logic
+### Endpoints
+- Recipe operations
+  ```javascript
+  recipeService.searchRecipes(params)
+  recipeService.getRecipeById(id)
+  recipeService.getRecentRecipes(userId)
+  recipeService.getRecommendations(userId)
+  ```
+- Rating operations
+  ```javascript
+  ratingService.rateRecipe(recipeId, rating)
+  ratingService.getUserRating(recipeId)
+  ratingService.getAverageRating(recipeId)
+  ```
+- Authentication
+  ```javascript
+  authService.login(credentials)
+  authService.verify()
+  ```
 
-### API Communication
-- Axios for HTTP requests
-- RESTful API integration
-- JWT token management
-
-## Security Measures
-1. Protected Routes
-   - Authentication check
-   - Role-based access control
-   - Token validation
-
-2. Data Security
-   - Secure password handling
-   - HTTPS communication
-   - Input validation
-
-3. Error Handling
-   - Global error boundary
-   - API error handling
-   - User feedback system
-
-## Data Flow
-1. User Action
-   - Component triggers event
-   - State update initiated
-
-2. API Communication
-   - Service layer handles API calls
-   - Response processing
-   - Error handling
-
-3. State Update
-   - Context updates
-   - Component re-rendering
-   - UI feedback
-
-## Performance Considerations
-- Lazy loading for routes
+## Performance Optimizations
+- Lazy loading of components
+- Optimized recipe fetching
+  - Minimal data for lists
+  - Detailed data on demand
 - Image optimization
 - Caching strategies
-- Bundle size optimization
+- Debounced search
+
+## UI/UX Features
+- Responsive design
+- Material-UI components
+- Loading states
+- Error handling
+- Toast notifications
+- Modal dialogs
+- Form validation
+
+## Security Measures
+- JWT token management
+- Protected routes
+- Input validation
+- Secure API calls
+- Environment variables
+
+## Error Handling
+- API error handling
+- User-friendly error messages
+- Loading states
+- Fallback UI components
+
+## Technical Stack
+- React 18
+- Material-UI
+- Axios
+- React Router
+- JWT Authentication
+
+## Development Configuration
+```javascript
+// .env.development
+REACT_APP_API_URL=http://127.0.0.1:5000/api
+REACT_APP_ENV=development
+```
+
+## Testing
+- Unit tests for components
+- Integration tests
+- API mocking
+- Test utilities
+
+## Build & Deployment
+- Development server
+- Production build
+- Environment configuration
+- Static file serving
+
+## Future Considerations
+- State management scaling
+- Performance monitoring
+- Analytics integration
+- Progressive Web App features
+- Accessibility improvements
