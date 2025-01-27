@@ -172,4 +172,68 @@ export const ratingService = {
   }
 };
 
+export const adminService = {
+  getWeeklyStats: async () => {
+    try {
+      console.log('Fetching weekly stats...');
+      const response = await api.get('/admin/stats/weekly');
+      console.log('Weekly stats response:', response);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching weekly stats:', error);
+      throw error;
+    }
+  },
+
+  getTopRecipes: async () => {
+    try {
+      console.log('Fetching top recipes...');
+      const response = await api.get('/admin/stats/top-recipes');
+      console.log('Top recipes response:', response);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching top recipes:', error);
+      throw error;
+    }
+  },
+
+  getDietViolations: async () => {
+    try {
+      console.log('Fetching diet violations...');
+      const response = await api.get('/admin/stats/diet-violations');
+      console.log('Diet violations response:', response);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching diet violations:', error);
+      throw error;
+    }
+  },
+
+  getCalorieViolations: async () => {
+    try {
+      console.log('Fetching calorie violations...');
+      const response = await api.get('/admin/stats/calorie-violations');
+      console.log('Calorie violations response:', response);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching calorie violations:', error);
+      throw error;
+    }
+  },
+
+  getTopRated: async (period) => {
+    try {
+      console.log('Fetching top rated recipes...');
+      const response = await api.get('/admin/stats/top-rated', {
+        params: { period }
+      });
+      console.log('Top rated response:', response);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching top rated recipes:', error);
+      throw error;
+    }
+  }
+};
+
 export default api; 

@@ -28,7 +28,7 @@ import {
   Line
 } from 'recharts';
 import Layout from '../components/layout/Layout';
-import axios from 'axios';
+import { adminService } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 
 function AdminDashboard() {
@@ -46,68 +46,45 @@ function AdminDashboard() {
     const fetchData = async () => {
       try {
         console.log('Fetching admin statistics...');
-        
-        // Fetch weekly stats
-        console.log('Fetching weekly stats...');
-        const weeklyResponse = await axios.get('/api/admin/stats/weekly', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        console.log('Weekly stats response:', weeklyResponse);
-        if (weeklyResponse.data.status === 'success') {
-          setWeeklyStats(weeklyResponse.data.data);
-        }
-
-        // Fetch top recipes
-        console.log('Fetching top recipes...');
-        const topRecipesResponse = await axios.get('/api/admin/stats/top-recipes', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        console.log('Top recipes response:', topRecipesResponse);
-        if (topRecipesResponse.data.status === 'success') {
-          setTopRecipes(topRecipesResponse.data.data);
-        }
-
-        // Fetch diet violations
-        console.log('Fetching diet violations...');
-        const violationsResponse = await axios.get('/api/admin/stats/diet-violations', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        console.log('Diet violations response:', violationsResponse);
-        if (violationsResponse.data.status === 'success') {
-          setDietViolations(violationsResponse.data.data);
-        }
-
-        // Fetch calorie violations
-        console.log('Fetching calorie violations...');
-        const calorieResponse = await axios.get('/api/admin/stats/calorie-violations', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        console.log('Calorie violations response:', calorieResponse);
-        if (calorieResponse.data.status === 'success') {
-          setCalorieViolations(calorieResponse.data.data);
-        }
-
-        // Fetch top rated recipes
-        console.log('Fetching top rated recipes...');
         setIsTopRatedLoading(true);  // Start loading
         setTopRated([]); // Clear existing data
-        const topRatedResponse = await axios.get(`/api/admin/stats/top-rated?period=${ratingPeriod}`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        });
-        console.log('Top rated response:', topRatedResponse);
-        if (topRatedResponse.data.status === 'success') {
-          setTopRated(topRatedResponse.data.data);
+        
+        // Fetch all data in parallel
+        const [
+          weeklyResponse,
+          topRecipesResponse,
+          violationsResponse,
+          calorieResponse,
+          topRatedResponse
+        ] = await Promise.all([
+          adminService.getWeeklyStats(),
+          adminService.getTopRecipes(),
+          adminService.getDietViolations(),
+          adminService.getCalorieViolations(),
+          adminService.getTopRated(ratingPeriod)
+        ]);
+
+        // Set states based on responses
+        if (weeklyResponse.status === 'success') {
+          setWeeklyStats(weeklyResponse.data);
         }
+
+        if (topRecipesResponse.status === 'success') {
+          setTopRecipes(topRecipesResponse.data);
+        }
+
+        if (violationsResponse.status === 'success') {
+          setDietViolations(violationsResponse.data);
+        }
+
+        if (calorieResponse.status === 'success') {
+          setCalorieViolations(calorieResponse.data);
+        }
+
+        if (topRatedResponse.status === 'success') {
+          setTopRated(topRatedResponse.data);
+        }
+
       } catch (err) {
         console.error('Error details:', {
           message: err.message,
