@@ -11,30 +11,61 @@ function MainPage() {
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchRecipeDetails = async (recipeId) => {
+    try {
+      const recipeData = await recipeService.getRecipeById(recipeId);
+      return recipeData;
+    } catch (error) {
+      console.error('Error fetching recipe details:', error);
+      return null;
+    }
+  };
+
+  const fetchRecentRecipes = async () => {
+    try {
+      const response = await recipeService.getRecentRecipes(user.user_id);
+      if (response.status === 'success') {
+        const recipePromises = response.data.map(fetchRecipeDetails);
+        const recipes = await Promise.all(recipePromises);
+        setRecentRecipes(recipes.filter(Boolean)); // Filter out null values
+      }
+    } catch (error) {
+      console.error('Error fetching recent recipes:', error);
+    }
+  };
+
+  const fetchRecommendations = async () => {
+    try {
+      const response = await recipeService.getRecommendations(user.user_id);
+      if (response.status === 'success') {
+        const recipePromises = response.data.map(fetchRecipeDetails);
+        const recipes = await Promise.all(recipePromises);
+        setRecommendedRecipes(recipes.filter(Boolean));
+      }
+    } catch (error) {
+      console.error('Error fetching recommendations:', error);
+    }
+  };
 
   useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        await Promise.all([
+          fetchRecentRecipes(),
+          fetchRecommendations()
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     if (user) {
       fetchData();
     }
   }, [user]);
-
-  const fetchData = async () => {
-    try {
-      // Fetch recommendations
-      const recommendationsResponse = await recipeService.getRecommendations(user?.user_id);
-      if (recommendationsResponse.status === 'success' && Array.isArray(recommendationsResponse.data)) {
-        setRecommendedRecipes(recommendationsResponse.data.slice(0, 3));
-      }
-
-      // Fetch recent recipes
-      const recentResponse = await recipeService.getRecentRecipes(user?.user_id);
-      if (recentResponse.status === 'success' && Array.isArray(recentResponse.data)) {
-        setRecentRecipes(recentResponse.data);
-      }
-    } catch (error) {
-      console.error('Error fetching recipes:', error);
-    }
-  };
 
   const handleRecipeClick = (recipe) => {
     setSelectedRecipe(recipe);

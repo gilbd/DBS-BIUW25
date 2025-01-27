@@ -45,10 +45,20 @@ def get_recipe(id):
         query = """
             SELECT 
                 r.*,
-                CASE WHEN e.user_id IS NOT NULL THEN TRUE ELSE FALSE END as is_eaten
+                CASE WHEN e.user_id IS NOT NULL THEN TRUE ELSE FALSE END as is_eaten,
+                JSON_ARRAYAGG(
+                    JSON_OBJECT(
+                        'name', n.name,
+                        'amount', c.amount,
+                        'unit', n.unit
+                    )
+                ) as nutrition_info
             FROM recipe r
             LEFT JOIN eats e ON r.recipe_id = e.recipe_id AND e.user_id = :user_id
+            LEFT JOIN contains c ON r.recipe_id = c.recipe_id
+            LEFT JOIN nutrition n ON c.nutrition_name = n.name
             WHERE r.recipe_id = :id
+            GROUP BY r.recipe_id, e.user_id
         """
 
         result = db.session.execute(text(query), {"id": id, "user_id": user_id}).first()
@@ -56,6 +66,18 @@ def get_recipe(id):
         if not result:
             logger.error(f"Recipe {id} not found")
             return jsonify({"status": "error", "message": "Recipe not found"}), 404
+
+        # Parse nutrition_info from string to list if it exists and isn't null
+        nutrition_info = []
+        if result.nutrition_info:
+            try:
+                import json
+
+                nutrition_info = json.loads(result.nutrition_info)
+                # Filter out null entries
+                nutrition_info = [n for n in nutrition_info if n.get("name") is not None]
+            except Exception as e:
+                logger.error(f"Error parsing nutrition info: {e}")
 
         recipe_data = {
             "recipe_id": result.recipe_id,
@@ -65,8 +87,10 @@ def get_recipe(id):
             "total_time": result.total_time,
             "image": result.image,
             "is_eaten": bool(result.is_eaten),
+            "nutrition_info": nutrition_info,
         }
 
+        logger.info(f"Recipe data: {recipe_data}")
         return jsonify({"status": "success", "data": recipe_data})
 
     except Exception as e:
@@ -128,23 +152,24 @@ def get_recommendations():
             return jsonify({"status": "error", "message": "User ID is required"}), 400
 
         query = """
-            SELECT r.* FROM recipe r
+            SELECT r.recipe_id
+            FROM recipe r
             WHERE NOT EXISTS (
-                SELECT 1 FROM eats e
-                WHERE e.recipe_id = r.recipe_id
-                AND e.user_id = :user_id
+                SELECT 1 FROM eats e2
+                WHERE e2.recipe_id = r.recipe_id
+                AND e2.user_id = :user_id
             )
             ORDER BY RAND()
             LIMIT 5;
         """
-        result = db.session.execute(text(query), {"user_id": user_id})
-        recipes = [Recipe.query.get(row[0]) for row in result]
-        recipes_data = [recipe.to_dict(user_id=user_id) for recipe in recipes]
 
-        return jsonify({"status": "success", "data": recipes_data}), 200
+        result = db.session.execute(text(query), {"user_id": user_id})
+        recipe_ids = [row.recipe_id for row in result]
+
+        return jsonify({"status": "success", "data": recipe_ids}), 200
 
     except Exception as e:
-        logger.error(f"Error in get_recommendations: {e}")
+        logger.error(f"Error getting recommendations: {str(e)}", exc_info=True)
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
@@ -156,8 +181,7 @@ def get_recent_recipes():
             return jsonify({"status": "error", "message": "User ID is required"}), 400
 
         query = """
-            SELECT r.*,
-                CASE WHEN e2.user_id IS NOT NULL THEN TRUE ELSE FALSE END AS is_eaten
+            SELECT r.recipe_id, latest_e.latest_created_at
             FROM recipe r
             JOIN (
                 SELECT e.recipe_id, MAX(e.created_at) AS latest_created_at
@@ -165,61 +189,17 @@ def get_recent_recipes():
                 WHERE e.user_id = :user_id
                 GROUP BY e.recipe_id
             ) latest_e ON r.recipe_id = latest_e.recipe_id
-            LEFT JOIN eats e2 ON r.recipe_id = e2.recipe_id AND e2.user_id = :user_id
-            GROUP BY r.recipe_id
             ORDER BY latest_e.latest_created_at DESC
             LIMIT 4;
         """
 
         result = db.session.execute(text(query), {"user_id": user_id})
-        recipes_data = [
-            {
-                "recipe_id": row.recipe_id,
-                "recipe_name": row.recipe_name,
-                "ingredients": row.ingredients,
-                "directions": row.directions,
-                "total_time": row.total_time,
-                "image": row.image,
-                "is_eaten": bool(row.is_eaten),
-            }
-            for row in result
-        ]
+        recipe_ids = [row.recipe_id for row in result]
 
-        return jsonify({"status": "success", "data": recipes_data})
+        return jsonify({"status": "success", "data": recipe_ids}), 200
 
     except Exception as e:
         logger.error(f"Error getting recent recipes: {str(e)}", exc_info=True)
-        return jsonify({"status": "error", "message": str(e)}), 500
-
-
-@recipe_controller.route("/new-recommendation", methods=["GET"])
-def get_new_recommendation():
-    try:
-        user_id = request.args.get("user_id")
-        if not user_id:
-            return jsonify({"status": "error", "message": "User ID is required"}), 400
-
-        query = """
-            SELECT r.* FROM recipe r
-            WHERE NOT EXISTS (
-                SELECT 1 FROM eats e
-                WHERE e.recipe_id = r.recipe_id
-                AND e.user_id = :user_id
-            )
-            ORDER BY RAND()
-            LIMIT 1;
-        """
-        result = db.session.execute(text(query), {"user_id": user_id}).first()
-
-        if not result:
-            logger.error("No new recipes available")
-            return jsonify({"status": "error", "message": "No new recipes available"}), 404
-
-        recipe = Recipe.query.get(result[0])
-        return jsonify({"status": "success", "data": recipe.to_dict(user_id=user_id)}), 200
-
-    except Exception as e:
-        logger.error(f"Error in get_new_recommendation: {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
@@ -302,14 +282,23 @@ def get_recipe_with_status(recipe_id):
         user_id = request.args.get("user_id")
         logger.info(f"Getting recipe {recipe_id} for user {user_id}")
 
-        # Get recipe with eaten status
         query = """
             SELECT 
                 r.*,
-                CASE WHEN e.user_id IS NOT NULL THEN TRUE ELSE FALSE END as is_eaten
+                CASE WHEN e.user_id IS NOT NULL THEN TRUE ELSE FALSE END as is_eaten,
+                JSON_ARRAYAGG(
+                    JSON_OBJECT(
+                        'name', n.name,
+                        'amount', c.amount,
+                        'unit', n.unit
+                    )
+                ) as nutrition_info
             FROM recipe r
             LEFT JOIN eats e ON r.recipe_id = e.recipe_id AND e.user_id = :user_id
+            LEFT JOIN contains c ON r.recipe_id = c.recipe_id
+            LEFT JOIN nutrition n ON c.nutrition_name = n.name
             WHERE r.recipe_id = :recipe_id
+            GROUP BY r.recipe_id, e.user_id
         """
 
         result = db.session.execute(
@@ -320,7 +309,18 @@ def get_recipe_with_status(recipe_id):
             logger.error(f"Recipe {recipe_id} not found")
             return jsonify({"status": "error", "message": "Recipe not found"}), 404
 
-        # Convert to dict and include is_eaten flag
+        # Parse nutrition_info from string to list if it exists and isn't null
+        nutrition_info = []
+        if result.nutrition_info:
+            try:
+                import json
+
+                nutrition_info = json.loads(result.nutrition_info)
+                # Filter out null entries
+                nutrition_info = [n for n in nutrition_info if n.get("name") is not None]
+            except Exception as e:
+                logger.error(f"Error parsing nutrition info: {e}")
+
         recipe_data = {
             "recipe_id": result.recipe_id,
             "recipe_name": result.recipe_name,
@@ -329,6 +329,7 @@ def get_recipe_with_status(recipe_id):
             "total_time": result.total_time,
             "image": result.image,
             "is_eaten": bool(result.is_eaten),
+            "nutrition_info": nutrition_info,
         }
 
         logger.info(f"Recipe data: {recipe_data}")

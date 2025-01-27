@@ -13,7 +13,14 @@ import {
   Alert,
   CircularProgress,
   IconButton,
-  Collapse
+  Collapse,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper
 } from '@mui/material';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
 import StarIcon from '@mui/icons-material/Star';
@@ -120,6 +127,44 @@ function RecipeDialog({ open, recipe, onClose, onEat }) {
     }
   };
 
+  const renderNutritionTable = () => {
+    // Check if nutrition_info exists and is an array
+    const nutritionInfo = Array.isArray(recipe.nutrition_info) ? recipe.nutrition_info : [];
+    
+    if (nutritionInfo.length === 0) {
+      return null;
+    }
+
+    return (
+      <>
+        <Divider sx={{ my: 2 }} />
+        <Typography variant="h6" gutterBottom>Nutrition Information</Typography>
+        <TableContainer component={Paper} variant="outlined">
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell>Nutrient</TableCell>
+                <TableCell align="right">Amount</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {nutritionInfo.map((nutrient, index) => (
+                <TableRow key={index}>
+                  <TableCell component="th" scope="row">
+                    {nutrient.name}
+                  </TableCell>
+                  <TableCell align="right">
+                    {nutrient.amount} {nutrient.unit}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </>
+    );
+  };
+
   return (
     <>
       <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -159,6 +204,8 @@ function RecipeDialog({ open, recipe, onClose, onEat }) {
           <Typography paragraph style={{ whiteSpace: 'pre-line' }}>
             {recipe.directions}
           </Typography>
+
+          {renderNutritionTable()}
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose}>Close</Button>
