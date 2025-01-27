@@ -12,7 +12,7 @@ recipe_controller = Blueprint("recipe_controller", __name__)
 
 
 # Create new recipe
-@recipe_controller.route("/recipes", methods=["POST"])
+@recipe_controller.route("/", methods=["POST"])
 def create_recipe():
     data = request.get_json()
     query = """
@@ -36,20 +36,46 @@ def create_recipe():
 
 
 # Get recipe according id
-@recipe_controller.route("/recipes/<int:id>", methods=["GET"])
+@recipe_controller.route("/<int:id>", methods=["GET"])
 def get_recipe(id):
-    logger.info(f"Getting recipe with id: {id}")
-    query = "SELECT * FROM recipe WHERE recipe_id = :id"
-    result = db.session.execute(text(query), {"id": id}).first()
-    if result:
-        recipe = Recipe.query.get(result[0])
-        return jsonify(recipe.to_dict()), 200
-    logger.error(f"Recipe not found for retrieval: {id}")
-    return jsonify({"message": "Recipe not found"}), 404
+    try:
+        user_id = request.args.get("user_id")
+        logger.info(f"Getting recipe {id} for user {user_id}")
+
+        query = """
+            SELECT 
+                r.*,
+                CASE WHEN e.user_id IS NOT NULL THEN TRUE ELSE FALSE END as is_eaten
+            FROM recipe r
+            LEFT JOIN eats e ON r.recipe_id = e.recipe_id AND e.user_id = :user_id
+            WHERE r.recipe_id = :id
+        """
+
+        result = db.session.execute(text(query), {"id": id, "user_id": user_id}).first()
+
+        if not result:
+            logger.error(f"Recipe {id} not found")
+            return jsonify({"status": "error", "message": "Recipe not found"}), 404
+
+        recipe_data = {
+            "recipe_id": result.recipe_id,
+            "recipe_name": result.recipe_name,
+            "ingredients": result.ingredients,
+            "directions": result.directions,
+            "total_time": result.total_time,
+            "image": result.image,
+            "is_eaten": bool(result.is_eaten),
+        }
+
+        return jsonify({"status": "success", "data": recipe_data})
+
+    except Exception as e:
+        logger.error(f"Error getting recipe: {str(e)}", exc_info=True)
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 
 # Update recipe according id
-@recipe_controller.route("/recipes/<int:id>", methods=["PUT"])
+@recipe_controller.route("/<int:id>", methods=["PUT"])
 def update_recipe(id):
     data = request.get_json()
     query = """
@@ -82,7 +108,7 @@ def update_recipe(id):
 
 
 # Delete recipe according id
-@recipe_controller.route("/recipes/<int:id>", methods=["DELETE"])
+@recipe_controller.route("/<int:id>", methods=["DELETE"])
 def delete_recipe(id):
     query = "DELETE FROM recipe WHERE recipe_id = :id RETURNING recipe_id"
     result = db.session.execute(text(query), {"id": id}).first()
@@ -127,26 +153,42 @@ def get_recent_recipes():
     try:
         user_id = request.args.get("user_id")
         if not user_id:
-            logger.error("User ID is required")
             return jsonify({"status": "error", "message": "User ID is required"}), 400
 
         query = """
-            SELECT r.* 
+            SELECT r.*,
+                CASE WHEN e2.user_id IS NOT NULL THEN TRUE ELSE FALSE END AS is_eaten
             FROM recipe r
-            JOIN eats e ON r.recipe_id = e.recipe_id
-            WHERE e.user_id = :user_id
+            JOIN (
+                SELECT e.recipe_id, MAX(e.created_at) AS latest_created_at
+                FROM eats e
+                WHERE e.user_id = :user_id
+                GROUP BY e.recipe_id
+            ) latest_e ON r.recipe_id = latest_e.recipe_id
+            LEFT JOIN eats e2 ON r.recipe_id = e2.recipe_id AND e2.user_id = :user_id
             GROUP BY r.recipe_id
-            ORDER BY MAX(e.created_at) DESC
-            LIMIT 3;
+            ORDER BY latest_e.latest_created_at DESC
+            LIMIT 4;
         """
-        result = db.session.execute(text(query), {"user_id": user_id})
-        recipes = [Recipe.query.get(row[0]) for row in result]
-        recipes_data = [recipe.to_dict(user_id=user_id) for recipe in recipes]
 
-        return jsonify({"status": "success", "data": recipes_data}), 200
+        result = db.session.execute(text(query), {"user_id": user_id})
+        recipes_data = [
+            {
+                "recipe_id": row.recipe_id,
+                "recipe_name": row.recipe_name,
+                "ingredients": row.ingredients,
+                "directions": row.directions,
+                "total_time": row.total_time,
+                "image": row.image,
+                "is_eaten": bool(row.is_eaten),
+            }
+            for row in result
+        ]
+
+        return jsonify({"status": "success", "data": recipes_data})
 
     except Exception as e:
-        logger.error(f"Error in get_recent_recipes: {e}")
+        logger.error(f"Error getting recent recipes: {str(e)}", exc_info=True)
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
@@ -188,14 +230,18 @@ def search_recipes():
         query_str = request.args.get("query")
         diet = request.args.get("diet")
         ingredient = request.args.get("ingredient")
+        user_id = request.args.get("user_id")
 
         base_query = """
-            SELECT DISTINCT r.* 
+            SELECT DISTINCT 
+                r.*,
+                CASE WHEN e.user_id IS NOT NULL THEN TRUE ELSE FALSE END as is_eaten
             FROM recipe r
+            LEFT JOIN eats e ON r.recipe_id = e.recipe_id AND e.user_id = :user_id
         """
 
         conditions = []
-        params = {}
+        params = {"user_id": user_id}
 
         if diet:
             base_query += """
@@ -230,8 +276,18 @@ def search_recipes():
         logger.info(f"Executing query: {base_query} with params: {params}")
 
         result = db.session.execute(text(base_query), params)
-        recipes = [Recipe.query.get(row[0]) for row in result]
-        recipes_data = [recipe.to_dict() for recipe in recipes]
+        recipes_data = [
+            {
+                "recipe_id": row.recipe_id,
+                "recipe_name": row.recipe_name,
+                "ingredients": row.ingredients,
+                "directions": row.directions,
+                "total_time": row.total_time,
+                "image": row.image,
+                "is_eaten": bool(row.is_eaten),
+            }
+            for row in result
+        ]
 
         return jsonify({"status": "success", "data": recipes_data}), 200
 
@@ -240,7 +296,7 @@ def search_recipes():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
-@recipe_controller.route("/recipes/<int:recipe_id>", methods=["GET"])
+@recipe_controller.route("/<int:recipe_id>", methods=["GET"])
 def get_recipe_with_status(recipe_id):
     try:
         user_id = request.args.get("user_id")
