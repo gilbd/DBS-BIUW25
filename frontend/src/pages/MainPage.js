@@ -84,20 +84,26 @@ function MainPage() {
       setSelectedRecipe(null);  // Clear the selected recipe
       
       // Get a new uneaten recipe to replace the eaten one
-      const response = await recipeService.getNewRecommendation(user.user_id);
-      if (response.status === 'success' && response.data) {
+      const response = await recipeService.getRecommendations(user.user_id);
+      if (response.status === 'success' && response.data.length > 0) {
+        const newRecipe = await recipeService.getRecipeById(response.data[0]);
+        
         // Update recommendedRecipes by replacing the eaten recipe with the new one
-        setRecommendedRecipes(prevRecipes => 
-          prevRecipes.map(recipe => 
-            recipe.recipe_id === recipeId ? response.data : recipe
-          )
-        );
+        setRecommendedRecipes(prevRecipes => {
+          const updatedRecipes = prevRecipes.filter(recipe => recipe.recipe_id !== recipeId);
+          if (newRecipe) {
+            updatedRecipes.push(newRecipe);
+          }
+          return updatedRecipes;
+        });
       }
 
       // Refresh recent recipes to include the newly eaten recipe
       const recentResponse = await recipeService.getRecentRecipes(user.user_id);
-      if (recentResponse.status === 'success' && Array.isArray(recentResponse.data)) {
-        setRecentRecipes(recentResponse.data);
+      if (recentResponse.status === 'success') {
+        const recipePromises = recentResponse.data.map(fetchRecipeDetails);
+        const recipes = await Promise.all(recipePromises);
+        setRecentRecipes(recipes.filter(Boolean));
       }
     } catch (error) {
       console.error('Error logging eaten recipe:', error);
